@@ -1053,7 +1053,16 @@ accion:accion,
 ...data
 })
 })
-.then(res=>res.json())
+.then(res=>{
+if(!res.ok){
+throw new Error("Error en conexión")
+}
+return res.json()
+})
+.catch(err=>{
+console.error("ERROR API:", err)
+alert("Error conectando con el servidor")
+})
 
 }
 
