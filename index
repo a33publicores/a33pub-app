@@ -1640,9 +1640,11 @@ alert("✅ Pagado con "+metodoTexto)
 
 function cargarProductos(){
 
-google.script.run.withSuccessHandler(function(data){
-productos=data
-}).obtenerProductos()
+api("obtenerProductos").then(function(data){
+
+productos = data || []
+
+})
 
 }
 
@@ -1651,11 +1653,11 @@ productos=data
 
 function cargarInventario(){
 
-google.script.run.withSuccessHandler(function(data){
+api("obtenerInventarioCompleto").then(function(data){
 
 let html=""
 
-data.forEach(function(p,i){
+(data || []).forEach(function(p,i){
 
 html+=`
 
@@ -1664,16 +1666,18 @@ html+=`
 <td>${p.nombre}</td>
 
 <td>
-<input type="number" value="${p.precio}" id="precio_${i}">
+<input type="number" value="${Number(p.precio)||0}" id="precio_${i}">
 </td>
 
 <td>
-<input type="number" value="${p.stock}" id="cantidad_${i}">
+<input type="number" value="${Number(p.stock)||0}" id="cantidad_${i}">
 </td>
 
-<td>${p.vendido}</td>
+<td>${Number(p.vendido)||0}</td>
 
-<td style="font-weight:bold;color:#27ae60">${p.restante}</td>
+<td style="font-weight:bold;color:#27ae60">
+${Number(p.restante)||0}
+</td>
 
 <td>
 <button onclick="guardarInventario(${i},'${p.codigo}')">
@@ -1687,9 +1691,9 @@ Guardar
 
 })
 
-tablaInventario.innerHTML=html
+document.getElementById("tablaInventario").innerHTML = html
 
-}).obtenerInventarioCompleto()
+})
 
 }
 
@@ -1704,7 +1708,7 @@ let archivoInput = document.getElementById("archivo").files[0]
 
 console.log("CLICK GUARDAR", conceptoVal, valorVal, abonoVal)
 
-/* 🔥 SI SELECCIONÓ UNA INVERSIÓN → SOLO ABONO */
+/* 🔥 SI ES ABONO */
 if(filaSeleccionada){
 
 if(!abonoVal || abonoVal <= 0){
@@ -1712,18 +1716,6 @@ alert("Debes ingresar un valor de abono")
 return
 }
 
-google.script.run
-.withSuccessHandler(function(){
-
-alert("✅ Abono aplicado correctamente")
-
-document.getElementById("abonoInv").value=""
-document.getElementById("selectInversion").value=""
-
-cargarInversiones()
-cargarSelectInversiones()
-
-})
 if(archivoInput){
 
 let reader = new FileReader()
@@ -1732,8 +1724,17 @@ reader.onload = function(e){
 
 let base64 = e.target.result.split(",")[1]
 
-google.script.run
-.withSuccessHandler(function(){
+api("guardarInversionConAbono",{
+valor:0,
+concepto:"",
+abono:abonoVal,
+fila:filaSeleccionada,
+archivo:{
+data:base64,
+mimeType:archivoInput.type,
+nombre:archivoInput.name
+}
+}).then(()=>{
 
 alert("✅ Abono aplicado con soporte")
 
@@ -1745,17 +1746,6 @@ cargarInversiones()
 cargarSelectInversiones()
 
 })
-.guardarInversionConAbono(
-0,
-"",
-abonoVal,
-filaSeleccionada,
-{
-data:base64,
-mimeType:archivoInput.type,
-nombre:archivoInput.name
-}
-)
 
 }
 
@@ -1763,8 +1753,13 @@ reader.readAsDataURL(archivoInput)
 
 }else{
 
-google.script.run
-.withSuccessHandler(function(){
+api("guardarInversionConAbono",{
+valor:0,
+concepto:"",
+abono:abonoVal,
+fila:filaSeleccionada,
+archivo:null
+}).then(()=>{
 
 alert("✅ Abono aplicado")
 
@@ -1772,20 +1767,13 @@ cargarInversiones()
 cargarSelectInversiones()
 
 })
-.guardarInversionConAbono(
-0,
-"",
-abonoVal,
-filaSeleccionada,
-null
-)
 
 }
 
 return
 }
 
-/* 🔥 SI NO → NUEVA INVERSIÓN NORMAL */
+/* 🔥 NUEVA INVERSIÓN */
 
 if(!conceptoVal || !valorVal){
 alert("Completa los campos")
@@ -1800,8 +1788,16 @@ reader.onload = function(e){
 
 let base64 = e.target.result.split(",")[1]
 
-google.script.run
-.withSuccessHandler(function(){
+api("guardarInversion",{
+valor:valorVal,
+concepto:conceptoVal,
+abono:abonoVal,
+archivo:{
+data:base64,
+mimeType:archivoInput.type,
+nombre:archivoInput.name
+}
+}).then(()=>{
 
 alert("✅ Guardado correctamente")
 
@@ -1814,16 +1810,6 @@ cargarInversiones()
 cargarSelectInversiones()
 
 })
-.guardarInversion(
-valorVal,
-conceptoVal,
-abonoVal,
-{
-data:base64,
-mimeType:archivoInput.type,
-nombre:archivoInput.name
-}
-)
 
 }
 
@@ -1831,8 +1817,12 @@ reader.readAsDataURL(archivoInput)
 
 }else{
 
-google.script.run
-.withSuccessHandler(function(){
+api("guardarInversion",{
+valor:valorVal,
+concepto:conceptoVal,
+abono:abonoVal,
+archivo:null
+}).then(()=>{
 
 alert("✅ Guardado correctamente")
 
@@ -1844,12 +1834,6 @@ cargarInversiones()
 cargarSelectInversiones()
 
 })
-.guardarInversion(
-valorVal,
-conceptoVal,
-abonoVal,
-null
-)
 
 }
 
@@ -1860,17 +1844,17 @@ null
 
 function cargarGraficos(){
 
-let inicio=document.getElementById("fechaInicio").value
-let fin=document.getElementById("fechaFin").value
-let producto=document.getElementById("filtroProducto").value
+let inicio = document.getElementById("fechaInicio").value
+let fin = document.getElementById("fechaFin").value
+let producto = document.getElementById("filtroProducto").value
 
-google.script.run.withSuccessHandler(function(data){
+api("datosGraficos",{inicio,fin,producto}).then(function(data){
 
-crearGrafico("graficoProductos",data.productos)
-crearGrafico("graficoMesas",data.mesas)
-crearGrafico("graficoFechas",data.fechas)
+crearGrafico("graficoProductos", data.productos || [])
+crearGrafico("graficoMesas", data.mesas || [])
+crearGrafico("graficoFechas", data.fechas || [])
 
-}).datosGraficos(inicio,fin,producto)
+})
 
 }
 
@@ -1948,12 +1932,12 @@ boton.innerHTML="🍺 "+boton.innerText
 
 function cargarComparacionSemanas(){
 
-google.script.run.withSuccessHandler(function(data){
+api("comparacionSemanas").then(function(data){
 
 let dias = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"]
 
-let actual = dias.map(d=>data.actual[d] || 0)
-let anterior = dias.map(d=>data.anterior[d] || 0)
+let actual = dias.map(d=>Number(data.actual?.[d]) || 0)
+let anterior = dias.map(d=>Number(data.anterior?.[d]) || 0)
 
 if(graficoSemanas){
 graficoSemanas.destroy()
@@ -1990,13 +1974,12 @@ legend:{position:"top"}
 
 })
 
-}).comparacionSemanas()
-
+})
 }
 
 function cargarInversiones(){
 
-google.script.run.withSuccessHandler(function(data){
+api("obtenerInversiones").then(function(data){
 
 let html=""
 
@@ -2004,21 +1987,20 @@ let totalInv=0
 let totalAbo=0
 let totalDeu=0
 
-
-
 if(!data || data.length===0){
 document.querySelector("#tablaInversion").innerHTML =
 "<tr><td colspan='6'>Sin registros</td></tr>"
 return
 }
 
+/* 🔥 LIMPIAR VALORES ($ y comas) */
 function limpiarNumero(valor){
 return Number(String(valor).replace(/[^0-9.-]+/g,"")) || 0
 }
 
 data.forEach(i=>{
 
-  console.log(i)
+console.log(i)
 
 totalInv += limpiarNumero(i.valor)
 totalAbo += limpiarNumero(i.abono)
@@ -2039,12 +2021,17 @@ html+=`
 
 document.querySelector("#tablaInversion").innerHTML = html
 
-/* 🔥 ACTUALIZAR TARJETA */
-document.getElementById("totalInvertido").innerText = "$"+totalInv.toLocaleString()
-document.getElementById("totalAbonado").innerText = "$"+totalAbo.toLocaleString()
-document.getElementById("totalDeuda").innerText = "$"+totalDeu.toLocaleString()
+/* 🔥 TARJETAS */
+document.getElementById("totalInvertido").innerText =
+"$"+totalInv.toLocaleString()
 
-}).obtenerInversiones()
+document.getElementById("totalAbonado").innerText =
+"$"+totalAbo.toLocaleString()
+
+document.getElementById("totalDeuda").innerText =
+"$"+totalDeu.toLocaleString()
+
+})
 
 }
 
@@ -2128,10 +2115,10 @@ if(id=="graficoFechas") graficoFecha=nuevoGrafico
 
 function cargarGraficoMetodos(){
 
-google.script.run.withSuccessHandler(function(data){
+api("ventasPorMetodoPago").then(function(data){
 
-let etiquetas = Object.keys(data)
-let valores = Object.values(data)
+let etiquetas = Object.keys(data || {})
+let valores = Object.values(data || {}).map(v=>Number(v)||0)
 
 let total = valores.reduce((a,b)=>a+b,0)
 
@@ -2166,7 +2153,7 @@ cutout:"65%",
 
 plugins:{
 
-/* 🟢 LEYENDA LIMPIA */
+/* 🟢 LEYENDA */
 legend:{
 position:"right",
 labels:{
@@ -2175,7 +2162,7 @@ font:{ size:12 }
 }
 },
 
-/* 💰 VALORES DENTRO DE LA TORTA */
+/* 💰 LABELS */
 datalabels:{
 color:"#fff",
 font:{
@@ -2187,13 +2174,13 @@ return "$"+value.toLocaleString()
 }
 },
 
-/* 📊 TOOLTIP PROFESIONAL */
+/* 📊 TOOLTIP */
 tooltip:{
 callbacks:{
 label:(ctx)=>{
 let valor = ctx.raw
 let total = ctx.dataset.data.reduce((a,b)=>a+b,0)
-let porcentaje = (valor/total*100).toFixed(1)
+let porcentaje = total ? (valor/total*100).toFixed(1) : 0
 
 return `${ctx.label}: $${valor.toLocaleString()} (${porcentaje}%)`
 }
@@ -2206,24 +2193,23 @@ return `${ctx.label}: $${valor.toLocaleString()} (${porcentaje}%)`
 
 })
 
-}).ventasPorMetodoPago()
-
+})
 }
 
 
 /* CARGA INICIAL */
 
-window.onload=function(){
+window.onload = function(){
 
-google.script.run.inicializarSistema()
+/* 🔥 OPCIONAL (solo si la necesitas) */
+api("inicializarSistema").then(()=>{
 
 cargarProductos()
 cargarMesas()
-
-/* CARGAR LISTA DE PRODUCTOS PARA EL FILTRO */
 cargarFiltroProductos()
-
 mostrarDashboard()
+
+})
 
 }
 
@@ -2264,72 +2250,86 @@ capa.remove()
 
 function cargarFiltroProductos(){
 
-google.script.run.withSuccessHandler(function(data){
+api("obtenerProductos").then(function(data){
 
-let select=document.getElementById("filtroProducto")
+let select = document.getElementById("filtroProducto")
 
-data.forEach(p=>{
+/* 🔥 LIMPIAR PARA NO DUPLICAR */
+select.innerHTML = `<option value="Todos">Todos</option>`
 
-let opt=document.createElement("option")
+(data || []).forEach(p=>{
 
-opt.value=p.nombre
-opt.text=p.nombre
+let opt = document.createElement("option")
+
+opt.value = p.nombre
+opt.text = p.nombre
 
 select.appendChild(opt)
 
 })
 
-}).obtenerProductos()
+})
 
 }
 
 function verCierreCaja(){
 
-google.script.run.withSuccessHandler(function(data){
+api("cierreDeCaja").then(function(data){
+
+let total = Number(data.total) || 0
+let efectivo = Number(data.efectivo) || 0
+let nequi = Number(data.nequi) || 0
+let daviplata = Number(data.daviplata) || 0
+let transferencia = Number(data.transferencia) || 0
 
 let mensaje = `
 📊 CIERRE DE CAJA
 
-💰 Total: $${data.total.toLocaleString()}
+💰 Total: $${total.toLocaleString()}
 
-💵 Efectivo: $${data.efectivo.toLocaleString()}
-📱 Nequi: $${data.nequi.toLocaleString()}
-🏦 Daviplata: $${data.daviplata.toLocaleString()}
-💳 Transferencia: $${data.transferencia.toLocaleString()}
+💵 Efectivo: $${efectivo.toLocaleString()}
+📱 Nequi: $${nequi.toLocaleString()}
+🏦 Daviplata: $${daviplata.toLocaleString()}
+💳 Transferencia: $${transferencia.toLocaleString()}
 `
 
 alert(mensaje)
 
-}).cierreDeCaja()
+})
 
 }
 
 
 function quitarProducto(fila){
-google.script.run.withSuccessHandler(function(){
+
+api("eliminarProductoVenta",{fila}).then(function(){
+
 verCuenta()
-}).eliminarProductoVenta(fila)
+
+})
+
 }
 
 function cargarSelectInversiones(){
 
-google.script.run.withSuccessHandler(function(data){
+api("obtenerInversiones").then(function(data){
 
 let select = document.getElementById("selectInversion")
 
+/* 🔥 LIMPIAR */
 select.innerHTML = `<option value="">Seleccionar inversión para abonar</option>`
 
-data.forEach((i,index)=>{
+(data || []).forEach((i,index)=>{
 
 select.innerHTML += `
 <option value="${index+2}">
-${i.concepto} - ${i.fecha}
+${i.concepto} - ${new Date(i.fecha).toLocaleDateString()}
 </option>
 `
 
 })
 
-}).obtenerInversiones()
+})
 
 }
 
