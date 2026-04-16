@@ -1039,6 +1039,24 @@ let graficoFecha=null
 let graficoSemanas=null
 let graficoMetodos=null
 
+const URL = "https://script.google.com/macros/s/AKfycbw52kQNPPX6LTst-7dDBoIEpYsjeDoY8EkYByl0EKxK4WBKQha9jjmA9LLxMBTwjzbI/exec"
+
+function api(accion,data={}){
+
+return fetch(URL,{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+accion:accion,
+...data
+})
+})
+.then(res=>res.json())
+
+}
+
 function cerrarSesion(){
 
 if(!confirm("¿Cerrar sesión?")) return
@@ -2337,5 +2355,4 @@ ${i.concepto} - ${new Date(i.fecha).toLocaleDateString()}
 
 </body>
 </html>
-
 
