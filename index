@@ -1069,10 +1069,10 @@ usuarios.style.display="none"
 
 function hacerLogin(){
 
-let user=document.getElementById("user").value.trim()
-let pass=document.getElementById("pass").value.trim()
+let user = document.getElementById("user").value.trim()
+let pass = document.getElementById("pass").value.trim()
 
-google.script.run.withSuccessHandler(function(res){
+api("login",{user,pass}).then(function(res){
 
 if(res.ok){
 
@@ -1092,7 +1092,7 @@ configurarPermisos()
 alert("Usuario o contraseña incorrectos")
 }
 
-}).login(user,pass)
+})
 
 }
 
@@ -1145,15 +1145,16 @@ horaTop.innerText = ahora.toLocaleTimeString()
 
 /* DINERO EN MESAS */
 
-google.script.run.withSuccessHandler(function(data){
+api("obtenerMesas").then(function(data){
 
 let total=0
 
 data.forEach(m=>{
-total+=m.total
+total += Number(m.total) || 0
 })
 
-dineroMesas.innerText="$"+total.toLocaleString()
+document.getElementById("dineroMesas").innerText =
+"$"+total.toLocaleString()
 
 }).obtenerResumenMesas()
 
@@ -1185,13 +1186,13 @@ cargarGraficoMetodos()
 
 cargarResumenInventario()
 
-google.script.run.withSuccessHandler(function(data){
+api("dashboard").then(function(data){
 
-document.getElementById("ventasHoy").innerText=
-"$"+data.totalDia.toLocaleString()
+document.getElementById("ventasHoy").innerText =
+"$"+Number(data.totalDia || 0).toLocaleString()
 
-document.getElementById("productoTop").innerText=
-data.productoTop
+document.getElementById("productoTop").innerText =
+data.productoTop || "-"
 
 }).resumenDashboard()
 
@@ -1201,23 +1202,30 @@ data.productoTop
 
 function crearUsuarioUI(){
 
-let u=nuevoUser.value
-let p=nuevoPass.value
-let r=rolUser.value
+let u = nuevoUser.value
+let p = nuevoPass.value
+let r = rolUser.value
 
-google.script.run.crearUsuario(u,p,r)
+api("crearUsuario",{usuario:u,clave:p,rol:r})
+.then(function(){
 
 alert("Usuario creado")
 
 cargarUsuarios()
 
+})
+
 }
 
 function cargarUsuarios(){
 
-google.script.run.withSuccessHandler(function(data){
+api("obtenerUsuarios").then(function(data){
 
 let html=""
+
+if(!data || data.length === 0){
+html = `<tr><td colspan="2">Sin usuarios</td></tr>`
+}else{
 
 data.forEach(u=>{
 
@@ -1230,9 +1238,11 @@ html+=`
 
 })
 
-tablaUsuarios.innerHTML=html
+}
 
-}).obtenerUsuarios()
+document.getElementById("tablaUsuarios").innerHTML = html
+
+})
 
 }
 
@@ -1277,22 +1287,27 @@ cargarInversiones()
 
 function cargarResumenInventario(){
 
-google.script.run.withSuccessHandler(function(data){
+api("obtenerProductos").then(function(data){
 
 /* 🔥 ORDENAR POR MÁS VENDIDO */
-data.sort((a,b)=>b.vendido - a.vendido)
+data.sort((a,b)=>(Number(b.vendido)||0) - (Number(a.vendido)||0))
 
 let html=""
 
 /* calcular máximo para barra */
-let maxVendido = Math.max(...data.map(p=>p.vendido),1)
+let maxVendido = Math.max(...data.map(p=>Number(p.vendido)||0),1)
 
 data.forEach(p=>{
 
-let porcentaje = (p.vendido / maxVendido) * 100
+let vendido = Number(p.vendido) || 0
+let restante = Number(p.restante) || 0
+
+let porcentaje = (vendido / maxVendido) * 100
 
 /* 🎨 COLOR DINÁMICO */
-let colorStock = p.restante <= 5 ? "#ef4444" : (p.restante <= 15 ? "#f59e0b" : "#22c55e")
+let colorStock = restante <= 5 
+? "#ef4444" 
+: (restante <= 15 ? "#f59e0b" : "#22c55e")
 
 html+=`
 <tr>
@@ -1301,7 +1316,7 @@ html+=`
 <td>${p.stock}</td>
 
 <td>
-${p.vendido}
+${vendido}
 
 <div style="background:#e5e7eb;border-radius:6px;height:6px;margin-top:4px;">
 <div style="width:${porcentaje}%;background:#2563eb;height:6px;border-radius:6px;"></div>
@@ -1310,7 +1325,7 @@ ${p.vendido}
 </td>
 
 <td style="color:${colorStock};font-weight:bold;">
-${p.restante}
+${restante}
 </td>
 
 </tr>
@@ -1318,9 +1333,9 @@ ${p.restante}
 
 })
 
-tablaResumen.innerHTML=html
+document.getElementById("tablaResumen").innerHTML = html
 
-}).obtenerProductos()
+})
 
 }
 
@@ -1329,26 +1344,26 @@ tablaResumen.innerHTML=html
 
 function cargarMesas(){
 
-google.script.run.withSuccessHandler(function(data){
+api("obtenerMesas").then(function(data){
 
-mesas=data
+mesas = data || []
 generarMesas()
 
-}).obtenerMesas()
+})
 
 }
 
 function crearMesa(){
 
-let nombre=prompt("Nombre de la mesa")
+let nombre = prompt("Nombre de la mesa")
 
 if(!nombre) return
 
-google.script.run.withSuccessHandler(function(){
+api("agregarMesa",{nombre}).then(function(){
 
 cargarMesas()
 
-}).agregarMesa(nombre)
+})
 
 }
 
@@ -1356,9 +1371,11 @@ function generarMesas(){
 
 mesasContainer.innerHTML=""
 
-google.script.run.withSuccessHandler(consumos=>{
+/* 🔥 PRIMERA LLAMADA */
+api("mesasConConsumo").then(function(consumos){
 
-google.script.run.withSuccessHandler(totales=>{
+/* 🔥 SEGUNDA LLAMADA */
+api("totalesPorMesa").then(function(totales){
 
 mesas.forEach((m,i)=>{
 
@@ -1366,7 +1383,7 @@ let div=document.createElement("div")
 
 div.className="mesa"
 
-let totalMesa=totales[m] || 0
+let totalMesa = Number(totales[m]) || 0
 
 div.innerHTML=`
 <div>
@@ -1386,9 +1403,9 @@ mesasContainer.appendChild(div)
 
 })
 
-}).totalesPorMesa()
+})
 
-}).mesasConConsumo()
+})
 
 }
 
@@ -1404,11 +1421,11 @@ function verCuenta(){
 
 if(mesaSeleccionada==null) return
 
-let cuenta=mesas[mesaSeleccionada]
+let cuenta = mesas[mesaSeleccionada]
 
-tituloCuenta.innerText="Cuenta - "+cuenta
+tituloCuenta.innerText = "Cuenta - " + cuenta
 
-google.script.run.withSuccessHandler(function(data){
+api("obtenerCuenta",{cuenta}).then(function(data){
 
 let html=""
 
@@ -1418,17 +1435,19 @@ html+=`
 <tr>
 <td>${i.producto}</td>
 <td>${i.cantidad}</td>
-<td>$${i.total}</td>
+<td>$${Number(i.total || 0).toLocaleString()}</td>
 <td><button onclick="quitarProducto(${i.fila})">❌</button></td>
 </tr>
 `
 
 })
 
-detalle.innerHTML=html
-total.innerText="TOTAL $"+data.total
+document.getElementById("detalle").innerHTML = html
 
-}).obtenerCuenta(cuenta)
+document.getElementById("total").innerText =
+"TOTAL $" + Number(data.total || 0).toLocaleString()
+
+})
 
 }
 
@@ -1514,9 +1533,7 @@ let cantidad = Number(document.getElementById("cant_"+id).value)
 
 let subtotal = precio * cantidad
 
-
-/* ANIMAR TARJETA (rebote suave) */
-
+/* ANIMAR TARJETA */
 if(tarjeta){
 tarjeta.classList.add("animar")
 
@@ -1525,9 +1542,7 @@ tarjeta.classList.remove("animar")
 },250)
 }
 
-
 /* AGREGAR FILA A LA CUENTA */
-
 let htmlFila = `
 <tr>
 <td>${nombre}</td>
@@ -1539,37 +1554,31 @@ let htmlFila = `
 
 detalle.innerHTML += htmlFila
 
-
 /* CALCULAR TOTAL */
-
 let textoTotal = total.innerText.replace("TOTAL $","").replace(/,/g,"")
-
 let totalActual = Number(textoTotal || 0)
 
 totalActual += subtotal
 
-
 /* MOSTRAR TOTAL */
-
 total.innerText = "TOTAL $" + totalActual.toLocaleString()
 
-
 /* ANIMAR TOTAL */
-
 total.classList.add("animarTotal")
 
 setTimeout(()=>{
 total.classList.remove("animarTotal")
 },400)
 
+/* 🔥 GUARDAR EN BACKEND (FETCH) */
+api("registrarVenta",{
+cuenta,
+nombre,
+precio,
+cantidad
+})
 
-/* GUARDAR VENTA EN GOOGLE SHEETS */
-
-google.script.run.registrarVenta(cuenta,nombre,precio,cantidad)
-
-
-/* ACTUALIZAR ESTADO DE MESAS */
-
+/* ACTUALIZAR MESAS */
 generarMesas()
 
 }
@@ -1584,7 +1593,7 @@ alert("Selecciona una mesa")
 return
 }
 
-let cuenta=mesas[mesaSeleccionada]
+let cuenta = mesas[mesaSeleccionada]
 
 /* 💳 SELECCIONAR METODO DE PAGO */
 let metodo = prompt(
@@ -1607,7 +1616,9 @@ return
 
 if(!confirm("¿Confirmar pago con "+metodoTexto+"?")) return
 
-google.script.run.withSuccessHandler(function(){
+/* 🔥 FETCH */
+api("cerrarMesa",{cuenta,metodo:metodoTexto})
+.then(function(){
 
 mesaSeleccionada=null
 
@@ -1620,7 +1631,7 @@ total.innerText="TOTAL $0"
 
 alert("✅ Pagado con "+metodoTexto)
 
-}).cerrarMesa(cuenta, metodoTexto)
+})
 
 }
 
