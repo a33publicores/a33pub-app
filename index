@@ -1,0 +1,2329 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta charset="UTF-8">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+background:#0f1720;
+color:#ffffff;
+}
+
+.sidebar{
+position:fixed;
+left:0;
+top:0;
+width:220px;
+height:100%;
+background:#ffffff;
+color:#000000;
+padding-top:20px;
+border-right:1px solid #e5e5e5;
+box-shadow:2px 0 8px rgba(0,0,0,0.05);
+}
+
+.sidebar h2{
+text-align:center;
+color:#111;
+margin-top:10px;
+margin-bottom:20px;
+}
+
+.sidebar button{
+width:100%;
+padding:15px;
+border:none;
+background:none;
+color:#333;
+text-align:left;
+cursor:pointer;
+font-size:14px;
+transition:0.2s;
+display:flex;
+align-items:center;
+gap:8px;
+}
+
+/* HOVER DORADO */
+
+.sidebar button:hover{
+background:#d4af37;
+color:#000;
+}
+
+/* ACTIVO (SELECCIONADO) */
+
+.sidebar button.activo{
+background:#f39c12;
+color:white;
+font-weight:bold;
+}
+
+.sidebar button:hover{
+background:#f2f2f2;
+color:#000;
+}
+
+.sidebar button:hover{background:#34495e;}
+
+.content{
+margin-left:220px;
+margin-right:400px;
+padding:20px;
+box-sizing:border-box;
+}
+
+.cuentaPanel{
+position:fixed;
+right:0;
+top:0;
+width:340px;
+height:100%;
+background:#1b2530;
+border-left:1px solid #2c3e50;
+padding:20px;
+overflow:auto;
+box-shadow:-3px 0 10px rgba(0,0,0,0.5);
+}
+
+/* TABLA CUENTA */
+
+.cuentaPanel table{
+width:100%;
+border-collapse:collapse;
+margin-top:10px;
+background:#ffffff;
+border-radius:6px;
+overflow:hidden;
+}
+
+.cuentaPanel th{
+background:#34495e;
+color:#ffffff;
+padding:10px;
+font-size:13px;
+text-align:left;
+}
+
+.cuentaPanel td{
+padding:10px;
+border-bottom:1px solid #e5e5e5;
+font-size:13px;
+color:#000000;
+}
+
+.totalBox{
+margin-top:15px;
+background:#ffffff;
+padding:14px;
+border-radius:8px;
+font-size:22px;
+text-align:center;
+font-weight:bold;
+color:#000000;
+border:1px solid #e5e5e5;
+box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+
+#mesasContainer{display:flex;flex-wrap:wrap;gap:10px;}
+
+.mesa{
+width:120px;
+height:60px;
+background:#34495e;
+color:white;
+display:flex;
+align-items:center;
+justify-content:center;
+cursor:pointer;
+border-radius:8px;
+font-weight:bold;
+transition:0.2s;
+}
+
+.mesa:hover{
+transform:scale(1.05);
+}
+
+.mesa.consumo{
+background:#e67e22;
+}
+
+#resultados{
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+gap:15px;
+width:100%;
+
+/* 🔥 AJUSTE FINO */
+max-width:calc(100vw - 700px);
+margin-right:10px;
+}
+
+.producto{
+background:white;
+color:black;
+padding:12px;
+border-radius:8px;
+overflow:hidden;
+}
+
+.producto b{
+color:#000000;
+font-size:14px;
+display:block;
+margin-bottom:5px;
+}
+
+.producto button{
+background:#27ae60;
+color:white;
+border:none;
+padding:6px 10px;
+border-radius:5px;
+cursor:pointer;
+margin-top:6px;
+}
+
+.producto button:hover{
+background:#219150;
+}
+
+.cantidadBox{
+display:flex;
+align-items:center;
+gap:5px;
+margin-top:5px;
+}
+
+.cantidadBox input{
+width:40px;
+text-align:center;
+}
+
+canvas{
+background:white;
+padding:10px;
+border-radius:6px;
+margin-bottom:30px;
+max-width:100%;
+height:320px !important;
+}
+/* HEADER VENTAS */
+
+.ventasHeader{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:25px;
+padding-right:20px;
+}
+
+/* BOTON AGREGAR MESA */
+
+.btnMesa{
+background:#27ae60;
+color:white;
+border:none;
+padding:12px 18px;
+border-radius:8px;
+font-size:14px;
+font-weight:bold;
+cursor:pointer;
+box-shadow:0 3px 6px rgba(0,0,0,0.2);
+transition:0.2s;
+}
+
+.btnMesa:hover{
+background:#219150;
+transform:translateY(-1px);
+}
+
+/* MESAS */
+
+#mesasContainer{
+display:flex;
+flex-wrap:wrap;
+gap:12px;
+margin-bottom:25px;
+}
+
+.mesa{
+width:130px;
+height:70px;
+background:#34495e;
+color:white;
+display:flex;
+align-items:center;
+justify-content:center;
+cursor:pointer;
+border-radius:8px;
+font-weight:bold;
+letter-spacing:0.5px;
+transition:0.15s;
+}
+
+.mesa:hover{
+transform:scale(1.05);
+}
+
+.mesa.consumo{
+background:#e67e22;
+}
+
+/* BUSCADOR */
+
+.buscadorBox{
+max-width:calc(100vw - 600px);
+}
+
+.buscadorBox input{
+width:100%;
+}
+
+#busqueda{
+width:300px;
+padding:10px;
+border-radius:6px;
+border:1px solid #ccc;
+font-size:14px;
+}
+
+.logoBox{
+display:flex;
+justify-content:center;
+margin-bottom:15px;
+}
+
+.logoBox img{
+width:120px;
+height:auto;
+border-radius:10px;
+box-shadow:0 3px 8px rgba(0,0,0,0.3);
+}
+
+/* ANIMACION PRODUCTO */
+
+@keyframes popProducto{
+0%{transform:scale(1)}
+50%{transform:scale(1.08)}
+100%{transform:scale(1)}
+}
+
+.producto.animar{
+animation:popProducto 0.25s ease;
+}
+
+
+/* ANIMACION CUENTA */
+
+@keyframes flashCuenta{
+0%{background:#ffffff}
+50%{background:#dff5e6}
+100%{background:#ffffff}
+}
+
+.totalBox.animarTotal{
+animation:flashCuenta 0.4s ease;
+}
+
+/* CAPA PARA EL ICONO VOLADOR */
+.flyLayer{
+position:fixed;
+left:0;
+top:0;
+pointer-events:none;
+z-index:9999;
+}
+
+/* ICONO DEL PRODUCTO VOLANDO */
+.flyItem{
+position:absolute;
+width:28px;
+height:28px;
+background:#e67e22;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+color:#fff;
+font-size:16px;
+box-shadow:0 4px 10px rgba(0,0,0,0.25);
+transition:transform .6s cubic-bezier(.2,.8,.2,1), 
+           left .6s cubic-bezier(.2,.8,.2,1),
+           top .6s cubic-bezier(.2,.8,.2,1),
+           opacity .6s;
+}
+
+.mesaTotal{
+font-size:16px;
+font-weight:bold;
+color:white;
+display:block;
+margin-top:4px;
+}
+
+.filtrosDashboard{
+display:flex;
+gap:20px;
+align-items:end;
+margin-bottom:20px;
+flex-wrap:wrap;
+}
+
+.filtrosDashboard label{
+font-size:12px;
+color:#ccc;
+display:block;
+margin-bottom:3px;
+}
+
+.filtrosDashboard input,
+.filtrosDashboard select{
+padding:6px;
+border-radius:6px;
+border:1px solid #ccc;
+}
+
+.btnFiltrar{
+background:#e67e22;
+color:white;
+border:none;
+padding:8px 14px;
+border-radius:6px;
+cursor:pointer;
+}
+
+.kpiContainer{
+display:flex;
+gap:20px;
+margin-bottom:25px;
+flex-wrap:wrap;
+}
+
+.kpiCard{
+background:white;
+color:black;
+padding:20px;
+border-radius:10px;
+box-shadow:0 4px 10px rgba(0,0,0,0.15);
+min-width:220px;
+}
+
+.kpiTitulo{
+font-size:13px;
+color:#777;
+margin-bottom:6px;
+}
+
+.kpiValor{
+font-size:26px;
+font-weight:bold;
+}
+
+#loginScreen{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:#0f1720;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+z-index:9999;
+}
+
+/* FONDO LOGIN */
+
+#loginScreen{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:linear-gradient(135deg,#0f1720,#1c2a38);
+display:flex;
+align-items:center;
+justify-content:center;
+z-index:9999;
+}
+
+/* CAJA LOGIN */
+
+.loginBox{
+background:#ffffff;
+padding:40px;
+border-radius:12px;
+width:320px;
+text-align:center;
+box-shadow:0 8px 25px rgba(0,0,0,0.4);
+}
+
+/* LOGO */
+
+.loginLogo{
+width:140px;
+margin-bottom:15px;
+}
+
+/* TITULO */
+
+.loginBox h2{
+margin-bottom:20px;
+color:#333;
+}
+
+/* INPUTS */
+
+.loginBox input{
+width:100%;
+padding:12px;
+margin-bottom:12px;
+border-radius:6px;
+border:1px solid #ccc;
+font-size:14px;
+outline:none;
+transition:0.2s;
+}
+
+.loginBox input:focus{
+border-color:#d4af37;
+box-shadow:0 0 5px rgba(212,175,55,0.5);
+}
+
+/* BOTON */
+
+.btnLogin{
+width:100%;
+padding:12px;
+background:#e67e22;
+color:white;
+border:none;
+border-radius:6px;
+font-size:16px;
+cursor:pointer;
+transition:0.2s;
+}
+
+.btnLogin:hover{
+background:#d35400;
+transform:translateY(-1px);
+}
+
+.topBar{
+display:flex;
+justify-content:space-between;
+align-items:center;
+background:#1c2a38;
+padding:12px 20px;
+border-radius:10px;
+margin-bottom:20px;
+flex-wrap:wrap;
+gap:10px;
+}
+
+.topItem{
+color:#fff;
+font-size:14px;
+}
+
+.cardForm{
+background:white;
+padding:20px;
+border-radius:10px;
+display:flex;
+flex-direction:column;
+gap:10px;
+max-width:400px;
+}
+
+.cardForm input{
+padding:10px;
+border-radius:6px;
+border:1px solid #ccc;
+}
+
+.btnGuardar{
+background:#e67e22;
+color:white;
+border:none;
+padding:12px;
+border-radius:6px;
+cursor:pointer;
+}
+
+.tablaPro{
+width:100%;
+background:white;
+color:black;
+border-radius:10px;
+overflow:hidden;
+}
+
+.tablaPro th{
+background:#34495e;
+color:white;
+padding:8px;
+}
+
+.tablaPro td{
+padding:8px;
+border-bottom:1px solid #eee;
+}
+
+.contenidoInterno{
+width:100%;
+max-width:1100px;
+margin:0 auto;
+}
+
+.flexInversion{
+display:flex;
+gap:20px;
+align-items:flex-start;
+flex-wrap:wrap;
+}
+
+.cardResumen{
+background:white;
+color:black;
+padding:20px;
+border-radius:10px;
+min-width:250px;
+box-shadow:0 4px 10px rgba(0,0,0,0.2);
+}
+
+.cardResumen h3{
+margin-bottom:15px;
+}
+
+.itemResumen{
+margin-bottom:10px;
+font-size:15px;
+}
+
+.deuda{
+color:red;
+font-weight:bold;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+  <div id="loginScreen">
+
+<div class="loginBox">
+
+<img 
+src="https://lh3.googleusercontent.com/d/1SrytkKauKKYxaV4cgMu-wFAsq7_ywWKX" 
+class="loginLogo"
+>
+
+<h2>Ingreso al Sistema</h2>
+
+<input type="text" id="user" placeholder="Usuario">
+
+<input type="password" id="pass" placeholder="Contraseña">
+
+<button class="btnLogin" onclick="hacerLogin()">
+Ingresar
+</button>
+
+</div>
+
+</div>
+
+<h2>Ingreso al Sistema</h2>
+
+<input type="text" id="user" placeholder="Usuario"><br><br>
+<input type="password" id="pass" placeholder="Contraseña"><br><br>
+
+<button onclick="hacerLogin()">Ingresar</button>
+
+
+
+</div>
+
+<div class="sidebar">
+
+<div class="logoBox">
+<img src="https://lh3.googleusercontent.com/d/1SrytkKauKKYxaV4cgMu-wFAsq7_ywWKX"
+style="width:130px;display:block;margin:auto;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,0.3);"
+>
+<p id="usuarioLabel" style="text-align:center;font-size:12px;color:#666;"></p>
+</div>
+
+<h2>A33 PUB & LICORES</h2>
+
+<button onclick="cambiarVista('dashboard', this)">Dashboard</button>
+<button onclick="cambiarVista('ventas', this)">Ventas</button>
+<button onclick="cambiarVista('inventario', this)">Inventario</button>
+<button onclick="cambiarVista('inversion', this)">Inversión</button>
+<button onclick="cambiarVista('usuarios', this)">Usuarios</button>
+
+</div>
+
+
+<div class="content">
+
+<div class="topBar">
+
+<div class="topItem">
+👤 <b id="usuarioTop">-</b>
+</div>
+
+<div class="topItem">
+📅 <span id="fechaTop"></span> | 🕒 <span id="horaTop"></span>
+</div>
+
+<div class="topItem">
+🟢 Estado: <span id="estadoNegocio">Abierto</span>
+</div>
+
+<div class="topItem">
+💰 En mesas: <span id="dineroMesas">$0</span>
+</div>
+
+</div>  
+
+<div id="dashboard">
+
+<h2>Dashboard</h2>
+
+<div class="kpiContainer">
+
+<div class="kpiCard">
+
+<div class="kpiTitulo">
+Ventas del día
+</div>
+
+<div class="kpiValor" id="ventasHoy">
+$0
+</div>
+
+</div>
+
+<div class="kpiCard">
+
+<div class="kpiTitulo">
+Producto más vendido
+</div>
+
+<div class="kpiValor" id="productoTop">
+-
+</div>
+
+</div>
+
+</div>
+
+<div class="filtrosDashboard">
+
+<div>
+<label>Desde</label>
+<input type="date" id="fechaInicio">
+</div>
+
+<div>
+<label>Hasta</label>
+<input type="date" id="fechaFin">
+</div>
+
+<div>
+<label>Producto</label>
+<select id="filtroProducto">
+<option value="Todos">Todos</option>
+</select>
+</div>
+
+<button class="btnFiltrar" onclick="cargarGraficos()">
+Filtrar
+</button>
+
+<button class="btnFiltrar" onclick="verCierreCaja()">
+💰 Cerrar Día
+</button>
+
+</div>
+
+<h3>Ventas por Producto</h3>
+<canvas id="graficoProductos"></canvas>
+
+<h3>Ventas Semanales por Día</h3>
+<canvas id="graficoMesas"></canvas>
+
+<h3>Ventas por Fecha</h3>
+<canvas id="graficoFechas"></canvas>
+
+<h3>Comparación Semana vs Semana</h3>
+<canvas id="graficoSemanas"></canvas>
+
+<div style="background:#1f2937;padding:20px;border-radius:12px;max-width:500px;margin:20px auto;">
+
+<h3 style="text-align:center;margin-bottom:15px;">
+Ventas por Método de Pago
+</h3>
+
+<canvas id="graficoMetodos" style="max-width:400px;margin:auto;"></canvas>
+
+</div>
+
+<h3>Resumen de Inventario</h3>
+
+<table style="width:100%;background:white;color:black;border-radius:10px;overflow:hidden;box-shadow:0 4px 10px rgba(0,0,0,0.2);">
+
+<thead style="background:#34495e;color:white;">
+<tr>
+<th>Producto</th>
+<th>Stock</th>
+<th>Vendido</th>
+<th>Restante</th>
+</tr>
+</thead>
+
+<tbody id="tablaResumen"></tbody>
+
+</table>
+
+</div>
+
+<div id="inversion" style="display:none">
+
+<h2>Inversión</h2>
+
+<div class="flexInversion">
+
+<!-- FORMULARIO -->
+<div class="cardForm">
+
+<input type="text" id="concepto" placeholder="Concepto">
+<input type="number" id="valorInv" placeholder="Valor total">
+
+<select id="selectInversion">
+<option value="">Seleccionar inversión para abonar</option>
+</select>
+
+<input type="number" id="abonoInv" placeholder="Abono (si aplica)">
+<input type="file" id="archivo">
+
+<button class="btnGuardar" onclick="guardarInversionUI()">
+Guardar Inversión
+</button>
+
+</div>
+
+<!-- TARJETA RESUMEN -->
+<div class="cardResumen">
+
+<h3>Resumen</h3>
+
+<div class="itemResumen">
+💰 Invertido: <span id="totalInvertido">$0</span>
+</div>
+
+<div class="itemResumen">
+💵 Abonado: <span id="totalAbonado">$0</span>
+</div>
+
+<div class="itemResumen deuda">
+📉 Deuda: <span id="totalDeuda">$0</span>
+</div>
+
+</div>
+
+</div>
+
+<hr>
+
+
+<div id="usuarios" style="display:none">
+
+<h2>Usuarios</h2>
+
+<input type="text" id="nuevoUser" placeholder="Usuario">
+<input type="password" id="nuevoPass" placeholder="Contraseña">
+
+<select id="rolUser">
+<option value="admin">Admin</option>
+<option value="vendedor">Vendedor</option>
+</select>
+
+<button onclick="crearUsuarioUI()">Crear</button>
+
+<hr>
+
+<table>
+<thead>
+<tr>
+<th>Usuario</th>
+<th>Rol</th>
+</tr>
+</thead>
+
+<tbody id="tablaUsuarios"></tbody>
+
+</table>
+
+</div>
+
+<hr>
+
+<h3>Historial</h3>
+
+<table class="tablaPro">
+
+<thead>
+<tr>
+<th>Fecha</th>
+<th>Concepto</th>
+<th>Valor</th>
+<th>Abono</th>
+<th>Deuda</th>
+<th>Archivo</th>
+</tr>
+</thead>
+
+<tbody id="tablaInversion"></tbody>
+
+</table>
+
+</div>
+
+<tbody id="tablaInversion"></tbody>
+
+</table>
+
+</div>
+
+<div id="ventas" style="display:none">
+
+<div class="contenidoInterno">
+
+<h2>Ventas</h2>
+
+<button class="btnMesa" onclick="crearMesa()">
+➕ Agregar Mesa
+</button>
+
+<br><br>
+
+<div id="mesasContainer"></div>
+
+<br>
+
+<div class="buscadorBox">
+<input type="text" id="busqueda" placeholder="🔎 Buscar producto">
+</div>
+
+<br>
+
+<div id="resultados"></div>
+
+</div>
+
+</div>
+
+
+<div id="inventario" style="display:none">
+
+<h2>Inventario</h2>
+
+<div class="contenidoInterno">
+
+<table>
+
+<thead>
+<tr>
+<th>Producto</th>
+<th>Precio</th>
+<th>Cantidad</th>
+<th>Vendido</th>
+<th>Restante</th>
+<th></th>
+</tr>
+</thead>
+
+<tbody id="tablaInventario"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+
+<div class="cuentaPanel">
+
+  <button onclick="cerrarSesion()" style="
+width:100%;
+padding:10px;
+margin-bottom:10px;
+background:#e74c3c;
+color:white;
+border:none;
+border-radius:6px;
+cursor:pointer;
+">
+Cambiar Usuario
+</button>
+
+<h3 id="tituloCuenta">Cuenta</h3>
+
+<table>
+
+<thead>
+<tr>
+<th>Producto</th>
+<th>Cant</th>
+<th>Total</th>
+<th></th>
+</tr>
+</thead>
+
+<tbody id="detalle"></tbody>
+
+</table>
+
+<div class="totalBox" id="total">TOTAL $0</div>
+
+<button onclick="pagarMesa()" style="width:100%;padding:12px;margin-top:10px;background:#27ae60;color:white;border:none;border-radius:6px;font-size:16px;">
+Pagar Mesa
+</button>
+
+</div>
+
+
+<script>
+let usuarioActual=null
+let productos=[]
+let mesas=[]
+let mesaSeleccionada=null
+
+
+/* 🎨 PALETA POWER BI */
+
+const coloresPowerBI = [
+"#2563eb",
+"#22c55e",
+"#f59e0b",
+"#ef4444",
+"#14b8a6",
+"#8b5cf6",
+"#06b6d4",
+"#84cc16",
+"#f97316",
+"#6366f1"
+]
+
+/* GRAFICOS */
+
+let graficoProd=null
+let graficoMesa=null
+let graficoFecha=null
+let graficoSemanas=null
+let graficoMetodos=null
+
+function cerrarSesion(){
+
+if(!confirm("¿Cerrar sesión?")) return
+
+usuarioActual=null
+
+/* MOSTRAR LOGIN */
+
+document.getElementById("loginScreen").style.display="flex"
+
+/* LIMPIAR CAMPOS */
+
+document.getElementById("user").value=""
+document.getElementById("pass").value=""
+
+/* OCULTAR TODO */
+
+dashboard.style.display="none"
+ventas.style.display="none"
+inventario.style.display="none"
+inversion.style.display="none"
+
+if(typeof usuarios !== "undefined"){
+usuarios.style.display="none"
+}
+
+}
+
+function hacerLogin(){
+
+let user=document.getElementById("user").value.trim()
+let pass=document.getElementById("pass").value.trim()
+
+google.script.run.withSuccessHandler(function(res){
+
+if(res.ok){
+
+/* 🔥 GUARDAR USUARIO GLOBAL */
+usuarioActual = res
+
+/* OCULTAR LOGIN */
+document.getElementById("loginScreen").style.display="none"
+
+/* 🔥 CARGAR TOP BAR */
+cargarTopBar()
+
+/* PERMISOS */
+configurarPermisos()
+
+}else{
+alert("Usuario o contraseña incorrectos")
+}
+
+}).login(user,pass)
+
+}
+
+function configurarPermisos(){
+
+let botones = document.querySelectorAll(".sidebar button")
+
+botones.forEach(b=>b.style.display="block")
+
+/* SI ES VENDEDOR */
+
+if(usuarioActual.rol=="vendedor"){
+
+botones.forEach(b=>{
+
+if(!b.innerText.includes("Ventas")){
+b.style.display="none"
+}
+
+})
+
+/* FORZAR VISTA A VENTAS */
+
+cambiarVista("ventas", document.querySelector(".sidebar button"))
+
+}
+
+}
+
+
+/* USUARIO */
+function cargarTopBar(){
+
+if(usuarioActual){
+usuarioTop.innerText = usuarioActual.usuario
+}
+
+/* FECHA */
+
+let hoy = new Date()
+
+fechaTop.innerText = hoy.toLocaleDateString()
+
+/* RELOJ EN VIVO */
+
+setInterval(()=>{
+let ahora = new Date()
+horaTop.innerText = ahora.toLocaleTimeString()
+},1000)
+
+/* DINERO EN MESAS */
+
+google.script.run.withSuccessHandler(function(data){
+
+let total=0
+
+data.forEach(m=>{
+total+=m.total
+})
+
+dineroMesas.innerText="$"+total.toLocaleString()
+
+}).obtenerResumenMesas()
+
+}
+
+function mostrarDashboard(){
+
+dashboard.style.display="block"
+ventas.style.display="none"
+inventario.style.display="none"
+inversion.style.display="none"
+
+/* LIMPIAR GRAFICOS ANTERIORES */
+
+if(graficoProd) graficoProd.destroy()
+if(graficoMesa) graficoMesa.destroy()
+if(graficoFecha) graficoFecha.destroy()
+if(graficoSemanas) graficoSemanas.destroy()
+
+/* RECARGAR DATOS */
+
+cargarGraficos()
+
+cargarTopBar()
+
+cargarComparacionSemanas()
+
+cargarGraficoMetodos()
+
+cargarResumenInventario()
+
+google.script.run.withSuccessHandler(function(data){
+
+document.getElementById("ventasHoy").innerText=
+"$"+data.totalDia.toLocaleString()
+
+document.getElementById("productoTop").innerText=
+data.productoTop
+
+}).resumenDashboard()
+
+
+
+}
+
+function crearUsuarioUI(){
+
+let u=nuevoUser.value
+let p=nuevoPass.value
+let r=rolUser.value
+
+google.script.run.crearUsuario(u,p,r)
+
+alert("Usuario creado")
+
+cargarUsuarios()
+
+}
+
+function cargarUsuarios(){
+
+google.script.run.withSuccessHandler(function(data){
+
+let html=""
+
+data.forEach(u=>{
+
+html+=`
+<tr>
+<td>${u.usuario}</td>
+<td>${u.rol}</td>
+</tr>
+`
+
+})
+
+tablaUsuarios.innerHTML=html
+
+}).obtenerUsuarios()
+
+}
+
+function mostrarVentas(){
+
+dashboard.style.display="none"
+ventas.style.display="block"
+inventario.style.display="none"
+inversion.style.display="none"
+
+/* RECARGAR MESAS */
+
+cargarMesas()
+
+}
+
+function mostrarInventario(){
+
+dashboard.style.display="none"
+ventas.style.display="none"
+inventario.style.display="block"
+inversion.style.display="none"
+
+/* RECARGAR INVENTARIO */
+
+cargarInventario()
+
+}
+
+function mostrarInversion(){
+
+dashboard.style.display="none"
+ventas.style.display="none"
+inventario.style.display="none"
+inversion.style.display="block"
+
+cargarInversiones()
+
+}
+
+
+
+function cargarResumenInventario(){
+
+google.script.run.withSuccessHandler(function(data){
+
+/* 🔥 ORDENAR POR MÁS VENDIDO */
+data.sort((a,b)=>b.vendido - a.vendido)
+
+let html=""
+
+/* calcular máximo para barra */
+let maxVendido = Math.max(...data.map(p=>p.vendido),1)
+
+data.forEach(p=>{
+
+let porcentaje = (p.vendido / maxVendido) * 100
+
+/* 🎨 COLOR DINÁMICO */
+let colorStock = p.restante <= 5 ? "#ef4444" : (p.restante <= 15 ? "#f59e0b" : "#22c55e")
+
+html+=`
+<tr>
+<td>${p.nombre}</td>
+
+<td>${p.stock}</td>
+
+<td>
+${p.vendido}
+
+<div style="background:#e5e7eb;border-radius:6px;height:6px;margin-top:4px;">
+<div style="width:${porcentaje}%;background:#2563eb;height:6px;border-radius:6px;"></div>
+</div>
+
+</td>
+
+<td style="color:${colorStock};font-weight:bold;">
+${p.restante}
+</td>
+
+</tr>
+`
+
+})
+
+tablaResumen.innerHTML=html
+
+}).obtenerProductos()
+
+}
+
+
+/* MESAS */
+
+function cargarMesas(){
+
+google.script.run.withSuccessHandler(function(data){
+
+mesas=data
+generarMesas()
+
+}).obtenerMesas()
+
+}
+
+function crearMesa(){
+
+let nombre=prompt("Nombre de la mesa")
+
+if(!nombre) return
+
+google.script.run.withSuccessHandler(function(){
+
+cargarMesas()
+
+}).agregarMesa(nombre)
+
+}
+
+function generarMesas(){
+
+mesasContainer.innerHTML=""
+
+google.script.run.withSuccessHandler(consumos=>{
+
+google.script.run.withSuccessHandler(totales=>{
+
+mesas.forEach((m,i)=>{
+
+let div=document.createElement("div")
+
+div.className="mesa"
+
+let totalMesa=totales[m] || 0
+
+div.innerHTML=`
+<div>
+${m}
+<br>
+<span class="mesaTotal">$${totalMesa.toLocaleString()}</span>
+</div>
+`
+
+if(consumos[m]){
+div.classList.add("consumo")
+}
+
+div.onclick=()=>seleccionarMesa(i)
+
+mesasContainer.appendChild(div)
+
+})
+
+}).totalesPorMesa()
+
+}).mesasConConsumo()
+
+}
+
+function seleccionarMesa(index){
+mesaSeleccionada=index
+verCuenta()
+}
+
+
+/* CUENTA */
+
+function verCuenta(){
+
+if(mesaSeleccionada==null) return
+
+let cuenta=mesas[mesaSeleccionada]
+
+tituloCuenta.innerText="Cuenta - "+cuenta
+
+google.script.run.withSuccessHandler(function(data){
+
+let html=""
+
+data.items.forEach(function(i){
+
+html+=`
+<tr>
+<td>${i.producto}</td>
+<td>${i.cantidad}</td>
+<td>$${i.total}</td>
+<td><button onclick="quitarProducto(${i.fila})">❌</button></td>
+</tr>
+`
+
+})
+
+detalle.innerHTML=html
+total.innerText="TOTAL $"+data.total
+
+}).obtenerCuenta(cuenta)
+
+}
+
+
+/* BUSCADOR PRODUCTOS */
+
+busqueda.addEventListener("keyup",function(){
+
+let texto=this.value.toLowerCase()
+
+resultados.innerHTML=""
+
+if(texto=="") return
+
+productos.forEach(function(p,i){
+
+if(p.nombre.toLowerCase().includes(texto)){
+
+resultados.innerHTML+=`
+
+<div class="producto">
+
+<b>${p.nombre}</b> $${p.precio}
+
+<div class="cantidadBox">
+
+<button onclick="menos(${i})">➖</button>
+
+<input type="number" id="cant_${i}" value="1">
+
+<button onclick="mas(${i})">➕</button>
+
+</div>
+
+<button onclick="agregarProducto('${p.nombre}',${p.precio},${i})">
+Agregar
+</button>
+
+</div>
+
+`
+
+}
+
+})
+
+})
+
+
+function mas(id){
+let campo=document.getElementById("cant_"+id)
+campo.value=Number(campo.value)+1
+}
+
+function menos(id){
+
+let campo=document.getElementById("cant_"+id)
+
+if(campo.value>1)
+campo.value=Number(campo.value)-1
+
+}
+
+function agregarProducto(nombre,precio,id){
+
+if(mesaSeleccionada==null){
+alert("Selecciona una mesa")
+return
+}
+
+/* TARJETA DEL PRODUCTO */
+let tarjeta = document.getElementsByClassName("producto")[id]
+
+/* ANIMACIÓN VOLAR HACIA LA CUENTA */
+if(tarjeta){
+animarVuelo(tarjeta)
+}
+
+/* OBTENER CUENTA */
+let cuenta = mesas[mesaSeleccionada]
+
+let cantidad = Number(document.getElementById("cant_"+id).value)
+
+let subtotal = precio * cantidad
+
+
+/* ANIMAR TARJETA (rebote suave) */
+
+if(tarjeta){
+tarjeta.classList.add("animar")
+
+setTimeout(()=>{
+tarjeta.classList.remove("animar")
+},250)
+}
+
+
+/* AGREGAR FILA A LA CUENTA */
+
+let htmlFila = `
+<tr>
+<td>${nombre}</td>
+<td>${cantidad}</td>
+<td>$${subtotal}</td>
+<td></td>
+</tr>
+`
+
+detalle.innerHTML += htmlFila
+
+
+/* CALCULAR TOTAL */
+
+let textoTotal = total.innerText.replace("TOTAL $","").replace(/,/g,"")
+
+let totalActual = Number(textoTotal || 0)
+
+totalActual += subtotal
+
+
+/* MOSTRAR TOTAL */
+
+total.innerText = "TOTAL $" + totalActual.toLocaleString()
+
+
+/* ANIMAR TOTAL */
+
+total.classList.add("animarTotal")
+
+setTimeout(()=>{
+total.classList.remove("animarTotal")
+},400)
+
+
+/* GUARDAR VENTA EN GOOGLE SHEETS */
+
+google.script.run.registrarVenta(cuenta,nombre,precio,cantidad)
+
+
+/* ACTUALIZAR ESTADO DE MESAS */
+
+generarMesas()
+
+}
+
+
+/* PAGAR MESA */
+
+function pagarMesa(){
+
+if(mesaSeleccionada==null){
+alert("Selecciona una mesa")
+return
+}
+
+let cuenta=mesas[mesaSeleccionada]
+
+/* 💳 SELECCIONAR METODO DE PAGO */
+let metodo = prompt(
+"Seleccione método de pago:\n\n1. Efectivo\n2. Nequi\n3. Daviplata\n4. Transferencia"
+)
+
+if(!metodo) return
+
+let metodoTexto=""
+
+switch(metodo){
+case "1": metodoTexto="Efectivo"; break
+case "2": metodoTexto="Nequi"; break
+case "3": metodoTexto="Daviplata"; break
+case "4": metodoTexto="Transferencia"; break
+default:
+alert("Método no válido")
+return
+}
+
+if(!confirm("¿Confirmar pago con "+metodoTexto+"?")) return
+
+google.script.run.withSuccessHandler(function(){
+
+mesaSeleccionada=null
+
+cargarMesas()
+
+/* LIMPIAR PANEL */
+tituloCuenta.innerText="Cuenta"
+detalle.innerHTML=""
+total.innerText="TOTAL $0"
+
+alert("✅ Pagado con "+metodoTexto)
+
+}).cerrarMesa(cuenta, metodoTexto)
+
+}
+
+
+/* PRODUCTOS */
+
+function cargarProductos(){
+
+google.script.run.withSuccessHandler(function(data){
+productos=data
+}).obtenerProductos()
+
+}
+
+
+/* INVENTARIO */
+
+function cargarInventario(){
+
+google.script.run.withSuccessHandler(function(data){
+
+let html=""
+
+data.forEach(function(p,i){
+
+html+=`
+
+<tr>
+
+<td>${p.nombre}</td>
+
+<td>
+<input type="number" value="${p.precio}" id="precio_${i}">
+</td>
+
+<td>
+<input type="number" value="${p.stock}" id="cantidad_${i}">
+</td>
+
+<td>${p.vendido}</td>
+
+<td style="font-weight:bold;color:#27ae60">${p.restante}</td>
+
+<td>
+<button onclick="guardarInventario(${i},'${p.codigo}')">
+Guardar
+</button>
+</td>
+
+</tr>
+
+`
+
+})
+
+tablaInventario.innerHTML=html
+
+}).obtenerInventarioCompleto()
+
+}
+
+function guardarInversionUI(){
+
+let conceptoVal = document.getElementById("concepto").value.trim()
+let filaSeleccionada = document.getElementById("selectInversion").value
+let valorVal = Number(document.getElementById("valorInv").value)
+let abonoVal = Number(document.getElementById("abonoInv").value || 0)
+
+let archivoInput = document.getElementById("archivo").files[0]
+
+console.log("CLICK GUARDAR", conceptoVal, valorVal, abonoVal)
+
+/* 🔥 SI SELECCIONÓ UNA INVERSIÓN → SOLO ABONO */
+if(filaSeleccionada){
+
+if(!abonoVal || abonoVal <= 0){
+alert("Debes ingresar un valor de abono")
+return
+}
+
+google.script.run
+.withSuccessHandler(function(){
+
+alert("✅ Abono aplicado correctamente")
+
+document.getElementById("abonoInv").value=""
+document.getElementById("selectInversion").value=""
+
+cargarInversiones()
+cargarSelectInversiones()
+
+})
+if(archivoInput){
+
+let reader = new FileReader()
+
+reader.onload = function(e){
+
+let base64 = e.target.result.split(",")[1]
+
+google.script.run
+.withSuccessHandler(function(){
+
+alert("✅ Abono aplicado con soporte")
+
+document.getElementById("abonoInv").value=""
+document.getElementById("selectInversion").value=""
+document.getElementById("archivo").value=""
+
+cargarInversiones()
+cargarSelectInversiones()
+
+})
+.guardarInversionConAbono(
+0,
+"",
+abonoVal,
+filaSeleccionada,
+{
+data:base64,
+mimeType:archivoInput.type,
+nombre:archivoInput.name
+}
+)
+
+}
+
+reader.readAsDataURL(archivoInput)
+
+}else{
+
+google.script.run
+.withSuccessHandler(function(){
+
+alert("✅ Abono aplicado")
+
+cargarInversiones()
+cargarSelectInversiones()
+
+})
+.guardarInversionConAbono(
+0,
+"",
+abonoVal,
+filaSeleccionada,
+null
+)
+
+}
+
+return
+}
+
+/* 🔥 SI NO → NUEVA INVERSIÓN NORMAL */
+
+if(!conceptoVal || !valorVal){
+alert("Completa los campos")
+return
+}
+
+if(archivoInput){
+
+let reader = new FileReader()
+
+reader.onload = function(e){
+
+let base64 = e.target.result.split(",")[1]
+
+google.script.run
+.withSuccessHandler(function(){
+
+alert("✅ Guardado correctamente")
+
+document.getElementById("concepto").value=""
+document.getElementById("valorInv").value=""
+document.getElementById("abonoInv").value=""
+document.getElementById("archivo").value=""
+
+cargarInversiones()
+cargarSelectInversiones()
+
+})
+.guardarInversion(
+valorVal,
+conceptoVal,
+abonoVal,
+{
+data:base64,
+mimeType:archivoInput.type,
+nombre:archivoInput.name
+}
+)
+
+}
+
+reader.readAsDataURL(archivoInput)
+
+}else{
+
+google.script.run
+.withSuccessHandler(function(){
+
+alert("✅ Guardado correctamente")
+
+document.getElementById("concepto").value=""
+document.getElementById("valorInv").value=""
+document.getElementById("abonoInv").value=""
+
+cargarInversiones()
+cargarSelectInversiones()
+
+})
+.guardarInversion(
+valorVal,
+conceptoVal,
+abonoVal,
+null
+)
+
+}
+
+}
+
+
+/* GRAFICOS */
+
+function cargarGraficos(){
+
+let inicio=document.getElementById("fechaInicio").value
+let fin=document.getElementById("fechaFin").value
+let producto=document.getElementById("filtroProducto").value
+
+google.script.run.withSuccessHandler(function(data){
+
+crearGrafico("graficoProductos",data.productos)
+crearGrafico("graficoMesas",data.mesas)
+crearGrafico("graficoFechas",data.fechas)
+
+}).datosGraficos(inicio,fin,producto)
+
+}
+
+/* 👉 PEGA AQUÍ 👇 */
+
+function cambiarVista(vista, boton){
+
+/* 🔒 BLOQUEO REAL */
+
+if(usuarioActual.rol=="vendedor" && vista!="ventas"){
+alert("No tienes acceso a esta sección")
+return
+}
+
+/* OCULTAR TODO */
+
+dashboard.style.display="none"
+ventas.style.display="none"
+inventario.style.display="none"
+inversion.style.display="none"
+
+if(typeof usuarios !== "undefined"){
+usuarios.style.display="none"
+}
+
+/* MOSTRAR */
+
+if(vista=="dashboard"){
+dashboard.style.display="block"
+cargarGraficos()
+}
+
+if(vista=="ventas"){
+ventas.style.display="block"
+cargarMesas()
+}
+
+if(vista=="inventario"){
+inventario.style.display="block"
+cargarInventario()
+}
+
+if(vista=="inversion"){
+
+document.getElementById("dashboard").style.display="none"
+document.getElementById("ventas").style.display="none"
+document.getElementById("inventario").style.display="none"
+document.getElementById("inversion").style.display="block"
+
+/* 🔥 CLAVE: ejecutar después de renderizar */
+setTimeout(()=>{
+cargarInversiones()
+cargarSelectInversiones()
+},200)
+
+}
+if(vista=="usuarios"){
+usuarios.style.display="block"
+cargarUsuarios()
+}
+
+/* BOTONES ACTIVOS */
+
+document.querySelectorAll(".sidebar button").forEach(b=>{
+b.classList.remove("activo")
+b.innerHTML=b.innerText.replace("🍺","")
+})
+
+if(boton){
+boton.classList.add("activo")
+boton.innerHTML="🍺 "+boton.innerText
+}
+
+}
+
+function cargarComparacionSemanas(){
+
+google.script.run.withSuccessHandler(function(data){
+
+let dias = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"]
+
+let actual = dias.map(d=>data.actual[d] || 0)
+let anterior = dias.map(d=>data.anterior[d] || 0)
+
+if(graficoSemanas){
+graficoSemanas.destroy()
+}
+
+let ctx = document.getElementById("graficoSemanas")
+
+graficoSemanas = new Chart(ctx,{
+
+type:"bar",
+
+data:{
+labels:dias,
+datasets:[
+{
+label:"Semana Actual",
+data:actual,
+backgroundColor:"#2563eb"
+},
+{
+label:"Semana Anterior",
+data:anterior,
+backgroundColor:"#94a3b8"
+}
+]
+},
+
+options:{
+responsive:true,
+plugins:{
+legend:{position:"top"}
+}
+}
+
+})
+
+}).comparacionSemanas()
+
+}
+
+function cargarInversiones(){
+
+google.script.run.withSuccessHandler(function(data){
+
+let html=""
+
+let totalInv=0
+let totalAbo=0
+let totalDeu=0
+
+
+
+if(!data || data.length===0){
+document.querySelector("#tablaInversion").innerHTML =
+"<tr><td colspan='6'>Sin registros</td></tr>"
+return
+}
+
+function limpiarNumero(valor){
+return Number(String(valor).replace(/[^0-9.-]+/g,"")) || 0
+}
+
+data.forEach(i=>{
+
+  console.log(i)
+
+totalInv += limpiarNumero(i.valor)
+totalAbo += limpiarNumero(i.abono)
+totalDeu += limpiarNumero(i.deuda)
+
+html+=`
+<tr>
+<td>${new Date(i.fecha).toLocaleDateString()}</td>
+<td>${i.concepto}</td>
+<td>${i.valor}</td>
+<td>${i.abono}</td>
+<td style="color:red">${i.deuda}</td>
+<td>${i.archivo ? `<a href="${i.archivo}" target="_blank">Ver</a>` : ""}</td>
+</tr>
+`
+
+})
+
+document.querySelector("#tablaInversion").innerHTML = html
+
+/* 🔥 ACTUALIZAR TARJETA */
+document.getElementById("totalInvertido").innerText = "$"+totalInv.toLocaleString()
+document.getElementById("totalAbonado").innerText = "$"+totalAbo.toLocaleString()
+document.getElementById("totalDeuda").innerText = "$"+totalDeu.toLocaleString()
+
+}).obtenerInversiones()
+
+}
+
+function crearGrafico(id,datos){
+
+let etiquetas=Object.keys(datos)
+let valores=Object.values(datos)
+
+let canvas=document.getElementById(id)
+
+let chartAnterior=null
+
+if(id=="graficoProductos") chartAnterior=graficoProd
+if(id=="graficoMesas") chartAnterior=graficoMesa
+if(id=="graficoFechas") chartAnterior=graficoFecha
+
+/* ELIMINAR GRAFICO ANTERIOR */
+
+if(chartAnterior){
+chartAnterior.destroy()
+}
+
+let nuevoGrafico=new Chart(canvas,{
+
+type:"bar",
+
+data:{
+labels:etiquetas,
+datasets:[{
+data:valores,
+backgroundColor: valores.map((v,i)=>coloresPowerBI[i % coloresPowerBI.length]),
+borderRadius:10,
+barThickness:20
+}]
+},
+
+plugins:[ChartDataLabels],
+
+options:{
+indexAxis:'y',
+
+plugins:{
+legend:{display:false},
+tooltip:{
+backgroundColor:"#111827",
+titleColor:"#fff",
+bodyColor:"#fff",
+padding:12,
+cornerRadius:8
+},
+datalabels:{
+color:"#fff",
+font:{
+weight:"bold",
+size:12
+},
+formatter:(value)=>{
+return "$"+value.toLocaleString()
+}
+}
+},
+
+animations:{
+y:{
+duration:1000,
+easing:"easeOutQuart"
+}
+}
+
+}
+
+})
+
+/* GUARDAR REFERENCIA */
+
+if(id=="graficoProductos") graficoProd=nuevoGrafico
+if(id=="graficoMesas") graficoMesa=nuevoGrafico
+if(id=="graficoFechas") graficoFecha=nuevoGrafico
+
+}
+
+function cargarGraficoMetodos(){
+
+google.script.run.withSuccessHandler(function(data){
+
+let etiquetas = Object.keys(data)
+let valores = Object.values(data)
+
+let total = valores.reduce((a,b)=>a+b,0)
+
+if(graficoMetodos){
+graficoMetodos.destroy()
+}
+
+let ctx = document.getElementById("graficoMetodos")
+
+graficoMetodos = new Chart(ctx,{
+
+type:"doughnut",
+
+data:{
+labels:etiquetas,
+datasets:[{
+data:valores,
+backgroundColor:[
+"#22c55e", // efectivo
+"#3b82f6", // nequi
+"#a855f7", // daviplata
+"#f59e0b"  // transferencia
+],
+borderWidth:0
+}]
+},
+
+plugins:[ChartDataLabels],
+
+options:{
+cutout:"65%",
+
+plugins:{
+
+/* 🟢 LEYENDA LIMPIA */
+legend:{
+position:"right",
+labels:{
+color:"#111",
+font:{ size:12 }
+}
+},
+
+/* 💰 VALORES DENTRO DE LA TORTA */
+datalabels:{
+color:"#fff",
+font:{
+weight:"bold",
+size:12
+},
+formatter:(value)=>{
+return "$"+value.toLocaleString()
+}
+},
+
+/* 📊 TOOLTIP PROFESIONAL */
+tooltip:{
+callbacks:{
+label:(ctx)=>{
+let valor = ctx.raw
+let total = ctx.dataset.data.reduce((a,b)=>a+b,0)
+let porcentaje = (valor/total*100).toFixed(1)
+
+return `${ctx.label}: $${valor.toLocaleString()} (${porcentaje}%)`
+}
+}
+}
+
+}
+
+}
+
+})
+
+}).ventasPorMetodoPago()
+
+}
+
+
+/* CARGA INICIAL */
+
+window.onload=function(){
+
+google.script.run.inicializarSistema()
+
+cargarProductos()
+cargarMesas()
+
+/* CARGAR LISTA DE PRODUCTOS PARA EL FILTRO */
+cargarFiltroProductos()
+
+mostrarDashboard()
+
+}
+
+function animarVuelo(origen){
+
+const panel = document.querySelector(".cuentaPanel")
+
+const start = origen.getBoundingClientRect()
+const end = panel.getBoundingClientRect()
+
+let capa = document.createElement("div")
+capa.className="flyLayer"
+
+let icono = document.createElement("div")
+icono.className="flyItem"
+icono.innerHTML="🍺"
+
+capa.appendChild(icono)
+document.body.appendChild(capa)
+
+icono.style.left=start.left+"px"
+icono.style.top=start.top+"px"
+
+setTimeout(()=>{
+
+icono.style.left=(end.left+40)+"px"
+icono.style.top=(end.top+60)+"px"
+icono.style.transform="scale(0.3)"
+icono.style.opacity="0"
+
+},10)
+
+setTimeout(()=>{
+capa.remove()
+},650)
+
+}
+
+function cargarFiltroProductos(){
+
+google.script.run.withSuccessHandler(function(data){
+
+let select=document.getElementById("filtroProducto")
+
+data.forEach(p=>{
+
+let opt=document.createElement("option")
+
+opt.value=p.nombre
+opt.text=p.nombre
+
+select.appendChild(opt)
+
+})
+
+}).obtenerProductos()
+
+}
+
+function verCierreCaja(){
+
+google.script.run.withSuccessHandler(function(data){
+
+let mensaje = `
+📊 CIERRE DE CAJA
+
+💰 Total: $${data.total.toLocaleString()}
+
+💵 Efectivo: $${data.efectivo.toLocaleString()}
+📱 Nequi: $${data.nequi.toLocaleString()}
+🏦 Daviplata: $${data.daviplata.toLocaleString()}
+💳 Transferencia: $${data.transferencia.toLocaleString()}
+`
+
+alert(mensaje)
+
+}).cierreDeCaja()
+
+}
+
+
+function quitarProducto(fila){
+google.script.run.withSuccessHandler(function(){
+verCuenta()
+}).eliminarProductoVenta(fila)
+}
+
+function cargarSelectInversiones(){
+
+google.script.run.withSuccessHandler(function(data){
+
+let select = document.getElementById("selectInversion")
+
+select.innerHTML = `<option value="">Seleccionar inversión para abonar</option>`
+
+data.forEach((i,index)=>{
+
+select.innerHTML += `
+<option value="${index+2}">
+${i.concepto} - ${i.fecha}
+</option>
+`
+
+})
+
+}).obtenerInversiones()
+
+}
+
+</script>
+
+</body>
+</html>
+
