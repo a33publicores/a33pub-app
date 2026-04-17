@@ -6,6 +6,7 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
+// LOGIN
 app.post("/login", (req,res)=>{
 
 const {usuario,clave} = req.body
@@ -22,10 +23,12 @@ res.json({ok:false})
 
 })
 
-app.get("/",(req,res)=>{
+// ROOT (IMPORTANTE)
+app.get("/", (req,res)=>{
 res.send("Backend activo 🚀")
 })
 
+// PORT RAILWAY
 const PORT = process.env.PORT || 3000
 
 app.listen(PORT, ()=>{
