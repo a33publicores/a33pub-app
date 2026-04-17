@@ -1396,6 +1396,8 @@ function cargarMesas(){
 
 api("obtenerMesas").then(function(data){
 
+console.log("MESAS DESDE BACKEND:", data)
+
 mesas = data || []
 generarMesas()
 
@@ -1409,15 +1411,28 @@ let nombre = prompt("Nombre de la mesa")
 
 if(!nombre) return
 
-api("agregarMesa",{nombre}).then(function(){
+console.log("CREANDO MESA:", nombre)
 
+api("agregarMesa",{nombre}).then(function(res){
+
+console.log("RESPUESTA BACKEND:", res)
+
+if(res && res.ok){
 cargarMesas()
+}else{
+alert("Error al crear mesa")
+}
 
+}).catch(err=>{
+console.error(err)
+alert("Error conexión backend")
 })
 
 }
 
 function generarMesas(){
+
+console.log("GENERANDO MESAS:", mesas)
 
 mesasContainer.innerHTML=""
 
