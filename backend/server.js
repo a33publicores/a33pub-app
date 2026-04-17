@@ -86,3 +86,48 @@ daviplata:0,
 transferencia:0
 })
 })
+
+let mesas = []
+let consumos = {} // { "Mesa 1": total }
+
+/* CREAR MESA */
+app.post("/agregarMesa",(req,res)=>{
+
+const {nombre} = req.body
+
+if(!nombre){
+return res.json({ok:false})
+}
+
+mesas.push(nombre)
+
+consumos[nombre] = 0
+
+res.json({ok:true})
+
+})
+
+/* OBTENER MESAS */
+app.post("/obtenerMesas",(req,res)=>{
+res.json(mesas)
+})
+
+/* MESAS CON CONSUMO */
+app.post("/mesasConConsumo",(req,res)=>{
+
+let data = {}
+
+Object.keys(consumos).forEach(m=>{
+if(consumos[m] > 0){
+data[m] = true
+}
+})
+
+res.json(data)
+
+})
+
+/* TOTALES POR MESA */
+app.post("/totalesPorMesa",(req,res)=>{
+res.json(consumos)
+})
