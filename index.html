@@ -1039,23 +1039,40 @@ let graficoFecha=null
 let graficoSemanas=null
 let graficoMetodos=null
 
-const URL = "https://script.google.com/macros/s/AKfycbxprCdAVErPOxaU09fuf5a4zARe6GQJTdbhBbkWdllcKTUaAGSks9nUElfj8tLp5ZsB/exec"
+const API_URL = "https://a33pub-app-production.up.railway.app"
 
-function api(accion,data={}){
+function api(accion, data = {}){
 
-return fetch(URL,{
+return fetch(API_URL + "/" + accion,{
 method:"POST",
-mode:"no-cors", // 🔥 CLAVE
 headers:{
-"Content-Type":"text/plain"
+"Content-Type":"application/json"
 },
-body:JSON.stringify({
-accion:accion,
-...data
+body:JSON.stringify(data)
 })
-})
-.then(()=>({ok:true})) // ⚠️ respuesta manual
+.then(res=>res.json())
 
+}
+
+let params = new URLSearchParams()
+
+params.append("accion", accion)
+params.append("callback", callbackName)
+
+for(let key in data){
+params.append(key, data[key])
+}
+
+let script = document.createElement("script")
+script.src = URL + "?" + params.toString()
+
+script.onerror = function(){
+reject("Error cargando script")
+}
+
+document.body.appendChild(script)
+
+})
 }
 
 function cerrarSesion(){
@@ -1091,17 +1108,40 @@ function hacerLogin(){
 let user = document.getElementById("user").value.trim()
 let pass = document.getElementById("pass").value.trim()
 
-api("login",{usuario:user,clave:pass}).then(function(){
+console.log("CLICK LOGIN")
 
-// 🔥 asumimos correcto (porque no podemos leer respuesta)
+if(!user || !pass){
+alert("Ingresa usuario y contraseña")
+return
+}
 
-usuarioActual = {usuario:user}
+api("login",{usuario:user,clave:pass})
+.then(function(res){
+
+console.log("RESPUESTA LOGIN:", res)
+
+if(!res){
+alert("No hay respuesta del servidor")
+return
+}
+
+if(res.ok){
+
+usuarioActual = res
 
 document.getElementById("loginScreen").style.display="none"
 
 cargarTopBar()
 configurarPermisos()
 
+}else{
+alert("Usuario o contraseña incorrectos")
+}
+
+})
+.catch(err=>{
+console.error("ERROR LOGIN:", err)
+alert("Error conectando con el servidor")
 })
 
 }
@@ -1155,7 +1195,7 @@ horaTop.innerText = ahora.toLocaleTimeString()
 
 /* DINERO EN MESAS */
 
-api("obtenerMesas").then(function(data){
+api("obtenerResumenMesas").then(function(data){
 
 let total=0
 
