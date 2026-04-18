@@ -1039,19 +1039,18 @@ let graficoFecha=null
 let graficoSemanas=null
 let graficoMetodos=null
 
-const API_URL = "https://a33pub-app-production.up.railway.app"
+const URL = "https://script.google.com/macros/s/AKfycbxprCdAVErPOxaU09fuf5a4zARe6GQJTdbhBbkWdllcKTUaAGSks9nUElfj8tLp5ZsB/exec"
 
 function api(accion, data = {}){
 
-return fetch(API_URL + "/" + accion,{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify(data)
-})
-.then(res=>res.json())
+return new Promise((resolve, reject)=>{
 
+const callbackName = "cb_" + Date.now()
+
+window[callbackName] = function(res){
+resolve(res)
+delete window[callbackName]
+script.remove()
 }
 
 let params = new URLSearchParams()
@@ -1103,46 +1102,32 @@ usuarios.style.display="none"
 
 }
 
-function hacerLogin(){
+function login(usuario,clave){
 
-let user = document.getElementById("user").value.trim()
-let pass = document.getElementById("pass").value.trim()
+const hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Usuarios")
+const datos = hoja.getDataRange().getValues()
 
-console.log("CLICK LOGIN")
+for(let i=1;i<datos.length;i++){
 
-if(!user || !pass){
-alert("Ingresa usuario y contraseña")
-return
+let user = String(datos[i][0]).trim().toLowerCase()
+let pass = String(datos[i][1]).trim()
+
+let inputUser = String(usuario).trim().toLowerCase()
+let inputPass = String(clave).trim()
+
+if(user === inputUser && pass === inputPass){
+
+return {
+ok:true,
+rol:datos[i][2],
+usuario:user
 }
 
-api("login",{usuario:user,clave:pass})
-.then(function(res){
-
-console.log("RESPUESTA LOGIN:", res)
-
-if(!res){
-alert("No hay respuesta del servidor")
-return
 }
 
-if(res.ok){
-
-usuarioActual = res
-
-document.getElementById("loginScreen").style.display="none"
-
-cargarTopBar()
-configurarPermisos()
-
-}else{
-alert("Usuario o contraseña incorrectos")
 }
 
-})
-.catch(err=>{
-console.error("ERROR LOGIN:", err)
-alert("Error conectando con el servidor")
-})
+return {ok:false}
 
 }
 
@@ -1396,8 +1381,6 @@ function cargarMesas(){
 
 api("obtenerMesas").then(function(data){
 
-console.log("MESAS DESDE BACKEND:", data)
-
 mesas = data || []
 generarMesas()
 
@@ -1411,28 +1394,15 @@ let nombre = prompt("Nombre de la mesa")
 
 if(!nombre) return
 
-console.log("CREANDO MESA:", nombre)
+api("agregarMesa",{nombre}).then(function(){
 
-api("agregarMesa",{nombre}).then(function(res){
-
-console.log("RESPUESTA BACKEND:", res)
-
-if(res && res.ok){
 cargarMesas()
-}else{
-alert("Error al crear mesa")
-}
 
-}).catch(err=>{
-console.error(err)
-alert("Error conexión backend")
 })
 
 }
 
 function generarMesas(){
-
-console.log("GENERANDO MESAS:", mesas)
 
 mesasContainer.innerHTML=""
 
