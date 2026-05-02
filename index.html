@@ -636,20 +636,6 @@ class="loginLogo"
 
 <h2>Ingreso al Sistema</h2>
 
-<input type="text" id="user" placeholder="Usuario">
-
-<input type="password" id="pass" placeholder="Contraseña">
-
-<button class="btnLogin" onclick="hacerLogin()">
-Ingresar
-</button>
-
-</div>
-
-</div>
-
-<h2>Ingreso al Sistema</h2>
-
 <input type="text" id="user" placeholder="Usuario"><br><br>
 <input type="password" id="pass" placeholder="Contraseña"><br><br>
 
@@ -2364,6 +2350,43 @@ ${i.concepto} - ${new Date(i.fecha).toLocaleDateString()}
 
 })
 
+})
+
+}
+
+function hacerLogin(){
+
+let user = document.getElementById("user").value.trim()
+let pass = document.getElementById("pass").value.trim()
+
+if(!user || !pass){
+alert("Ingresa usuario y contraseña")
+return
+}
+
+api("login",{usuario:user,clave:pass})
+.then(function(res){
+
+console.log("LOGIN:",res)
+
+if(res.ok){
+
+usuarioActual = res
+
+document.getElementById("loginScreen").style.display="none"
+
+cargarTopBar()
+configurarPermisos()
+mostrarDashboard()
+
+}else{
+alert("Usuario o contraseña incorrectos")
+}
+
+})
+.catch(err=>{
+console.error(err)
+alert("Error conectando con el servidor")
 })
 
 }
