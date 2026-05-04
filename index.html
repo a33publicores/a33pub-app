@@ -2222,15 +2222,11 @@ return `${ctx.label}: $${valor.toLocaleString()} (${porcentaje}%)`
 
 window.onload = function(){
 
-/* 🔥 OPCIONAL (solo si la necesitas) */
-api("inicializarSistema").then(()=>{
+// 🔥 MOSTRAR LOGIN SIEMPRE
+document.getElementById("loginScreen").style.display = "flex"
 
-cargarProductos()
-cargarMesas()
-cargarFiltroProductos()
-mostrarDashboard()
-
-})
+// 🔴 NO cargar nada aún
+// TODO se carga después del login
 
 }
 
@@ -2373,11 +2369,25 @@ if(res.ok){
 
 usuarioActual = res
 
+// 🔥 OCULTAR LOGIN
 document.getElementById("loginScreen").style.display="none"
+
+// 🔥 AQUÍ ES EL CAMBIO IMPORTANTE
+api("inicializarSistema").then(()=>{
+
+cargarProductos()
+cargarMesas()
+cargarFiltroProductos()
 
 cargarTopBar()
 configurarPermisos()
+
 mostrarDashboard()
+cargarGraficos()
+cargarComparacionSemanas()
+cargarGraficoMetodos()
+
+})
 
 }else{
 alert("Usuario o contraseña incorrectos")
