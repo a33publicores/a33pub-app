@@ -1027,61 +1027,23 @@ let graficoFecha=null
 let graficoSemanas=null
 let graficoMetodos=null
 
-const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbxprCdAVErPOxaU09fuf5a4zARe6GQJTdbhBbkWdllcKTUaAGSks9nUElfj8tLp5ZsB/exec"
+const URL = "https://a33pub-app-production.up.railway.app"
 
 function api(accion, data = {}){
 
-return new Promise((resolve, reject)=>{
-
-const callbackName = "cb_" + Date.now()
-
-// 🔥 definir callback global
-window[callbackName] = function(res){
-resolve(res)
-
-// limpiar
-delete window[callbackName]
-if(script.parentNode){
-script.parentNode.removeChild(script)
-}
-}
-
-let params = new URLSearchParams()
-
-params.append("accion", accion)
-params.append("callback", callbackName)
-
-// 🔥 agregar datos
-for(let key in data){
-if(data[key] !== undefined && data[key] !== null){
-params.append(key, data[key])
-}
-}
-
-// 🔥 crear script JSONP
-let script = document.createElement("script")
-script.src = URL_SCRIPT + "?" + params.toString()
-
-// 🔥 timeout de seguridad
-let timeout = setTimeout(()=>{
-delete window[callbackName]
-if(script.parentNode){
-script.parentNode.removeChild(script)
-}
-reject("Timeout: servidor no respondió")
-}, 10000)
-
-// 🔥 manejo de error
-script.onerror = function(){
-clearTimeout(timeout)
-delete window[callbackName]
-reject("Error cargando script (URL incorrecta o deploy)")
-}
-
-// agregar al DOM
-document.body.appendChild(script)
-
+return fetch(URL + "/" + accion, {
+method: "POST",
+headers: {
+"Content-Type": "application/json"
+},
+body: JSON.stringify(data)
 })
+.then(res => res.json())
+.catch(err => {
+console.error(err)
+throw "Error conectando con el servidor"
+})
+
 }
 
 function cerrarSesion(){
