@@ -25,7 +25,7 @@ res.json({ok:false})
 
 // ROOT (IMPORTANTE)
 app.get("/", (req,res)=>{
-res.send("Backend activo 🚀")
+res.status(200).send("Backend activo 🚀")
 })
 
 // PORT RAILWAY
