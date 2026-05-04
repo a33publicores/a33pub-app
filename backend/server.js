@@ -3,7 +3,12 @@ const cors = require("cors")
 
 const app = express()
 app.set("trust proxy", 1)
-app.use(cors())
+
+app.use(cors({
+  origin: "*", // 🔥 permite cualquier origen (rápido para pruebas)
+  methods: ["GET","POST"],
+  allowedHeaders: ["Content-Type"]
+}))
 app.use(express.json())
 
 // LOGIN
