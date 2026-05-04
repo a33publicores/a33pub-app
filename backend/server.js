@@ -2,6 +2,13 @@ const express = require("express")
 const cors = require("cors")
 
 const app = express()
+
+app.options("*", (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "*")
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+  res.setHeader("Access-Control-Allow-Headers", "*")
+  res.sendStatus(200)
+})
 app.set("trust proxy", 1)
 
 // 🔥 CORS COMPLETO (SOLUCIÓN DEFINITIVA)
