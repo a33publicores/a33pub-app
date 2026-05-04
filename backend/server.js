@@ -113,12 +113,50 @@ app.post("/dashboard", async (req, res) => {
 // ==========================
 // DEMÁS ENDPOINTS (NO TOCADOS)
 // ==========================
-app.post("/obtenerProductos",(req,res)=>{
-res.json([])
+app.post("/obtenerProductos", async (req,res)=>{
+
+try{
+
+const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
+const url = `https://opensheet.elk.sh/${sheetID}/Inventario`
+
+const response = await fetch(url)
+const data = await response.json()
+
+res.json(data)
+
+}catch(err){
+res.json({ok:false,error:err.toString()})
+}
+
 })
 
-app.post("/obtenerResumenMesas",(req,res)=>{
-res.json([])
+app.post("/obtenerResumenMesas", async (req,res)=>{
+
+try{
+
+const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
+const url = `https://opensheet.elk.sh/${sheetID}/Ventas`
+
+const response = await fetch(url)
+const data = await response.json()
+
+let resumen = {}
+
+data.forEach(row=>{
+let mesa = row.Mesa || "Mesa"
+let total = Number(row.Total || 0)
+
+if(!resumen[mesa]) resumen[mesa] = 0
+resumen[mesa] += total
+})
+
+res.json(resumen)
+
+}catch(err){
+res.json({ok:false,error:err.toString()})
+}
+
 })
 
 app.post("/datosGraficos", async (req,res)=>{
@@ -159,29 +197,125 @@ res.json({ok:false,error:err.toString()})
 
 })
 
-app.post("/comparacionSemanas",(req,res)=>{
-res.json({
-actual:{},
-anterior:{}
-})
+app.post("/comparacionSemanas", async (req,res)=>{
+
+try{
+
+const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
+const url = `https://opensheet.elk.sh/${sheetID}/Ventas`
+
+const response = await fetch(url)
+const data = await response.json()
+
+let actual = 0
+let anterior = 0
+
+data.forEach(row=>{
+let total = Number(row.Total || 0)
+let fecha = new Date(row.Fecha)
+
+let hoy = new Date()
+let diff = (hoy - fecha) / (1000*60*60*24)
+
+if(diff <= 7){
+actual += total
+}else if(diff <= 14){
+anterior += total
+}
 })
 
-app.post("/ventasPorMetodoPago",(req,res)=>{
-res.json({})
+res.json({actual, anterior})
+
+}catch(err){
+res.json({ok:false,error:err.toString()})
+}
+
 })
 
-app.post("/obtenerInversiones",(req,res)=>{
-res.json([])
+app.post("/ventasPorMetodoPago", async (req,res)=>{
+
+try{
+
+const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
+const url = `https://opensheet.elk.sh/${sheetID}/Ventas`
+
+const response = await fetch(url)
+const data = await response.json()
+
+let metodos = {}
+
+data.forEach(row=>{
+let metodo = row.MetodoPago || "Otro"
+let total = Number(row.Total || 0)
+
+if(!metodos[metodo]) metodos[metodo] = 0
+metodos[metodo] += total
 })
 
-app.post("/cierreDeCaja",(req,res)=>{
-res.json({
-total:0,
+res.json(metodos)
+
+}catch(err){
+res.json({ok:false,error:err.toString()})
+}
+
+})
+
+app.post("/obtenerInversiones", async (req,res)=>{
+
+try{
+
+const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
+const url = `https://opensheet.elk.sh/${sheetID}/Inversiones`
+
+const response = await fetch(url)
+const data = await response.json()
+
+res.json(data)
+
+}catch(err){
+res.json({ok:false,error:err.toString()})
+}
+
+})
+
+app.post("/cierreDeCaja", async (req,res)=>{
+
+try{
+
+const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
+const url = `https://opensheet.elk.sh/${sheetID}/Ventas`
+
+const response = await fetch(url)
+const data = await response.json()
+
+let total = 0
+let metodos = {
 efectivo:0,
 nequi:0,
 daviplata:0,
 transferencia:0
+}
+
+data.forEach(row=>{
+let metodo = (row.MetodoPago || "").toLowerCase()
+let valor = Number(row.Total || 0)
+
+total += valor
+
+if(metodos[metodo] !== undefined){
+metodos[metodo] += valor
+}
 })
+
+res.json({
+total,
+...metodos
+})
+
+}catch(err){
+res.json({ok:false,error:err.toString()})
+}
+
 })
 
 let mesas = []
@@ -252,8 +386,32 @@ res.json({ok:false,error:err.toString()})
 
 })
 
-app.post("/totalesPorMesa",(req,res)=>{
-res.json(consumos)
+app.post("/totalesPorMesa", async (req,res)=>{
+
+try{
+
+const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
+const url = `https://opensheet.elk.sh/${sheetID}/Ventas`
+
+const response = await fetch(url)
+const data = await response.json()
+
+let totales = {}
+
+data.forEach(row=>{
+let mesa = row.Mesa || "Mesa"
+let total = Number(row.Total || 0)
+
+if(!totales[mesa]) totales[mesa] = 0
+totales[mesa] += total
+})
+
+res.json(totales)
+
+}catch(err){
+res.json({ok:false,error:err.toString()})
+}
+
 })
 
 // ==========================
