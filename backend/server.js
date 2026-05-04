@@ -1,6 +1,6 @@
 const express = require("express")
 const cors = require("cors")
-
+const fetch = require("node-fetch")
 const app = express()
 
 app.options("*", (req, res) => {
@@ -56,11 +56,48 @@ app.listen(PORT, ()=>{
 console.log("Servidor corriendo en " + PORT)
 })
 
-app.post("/dashboard",(req,res)=>{
-res.json({
-totalDia:0,
-productoTop:"-"
-})
+app.post("/dashboard", async (req, res) => {
+  try {
+
+    const url = "https://opensheet.elk.sh/1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc/Ventas"
+
+    const response = await fetch(url)
+    const data = await response.json()
+
+    let totalDia = 0
+    let productos = {}
+
+    data.forEach(row => {
+
+      let total = Number(row.Total || 0)
+      let producto = row.Producto || "Sin nombre"
+
+      totalDia += total
+
+      if(!productos[producto]){
+        productos[producto] = 0
+      }
+
+      productos[producto] += total
+
+    })
+
+    let productoTop = "-"
+
+    if(Object.keys(productos).length > 0){
+      productoTop = Object.keys(productos).reduce((a,b)=>
+        productos[a] > productos[b] ? a : b
+      )
+    }
+
+    res.json({
+      totalDia,
+      productoTop
+    })
+
+  } catch (error) {
+    res.json({ ok:false, error:error.toString() })
+  }
 })
 
 app.post("/obtenerProductos",(req,res)=>{
