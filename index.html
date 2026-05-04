@@ -1159,8 +1159,8 @@ api("obtenerResumenMesas").then(function(data){
 
 let total=0
 
-data.forEach(m=>{
-total += Number(m.total) || 0
+Object.values(data).forEach(v=>{
+total += Number(v) || 0
 })
 
 document.getElementById("dineroMesas").innerText =
@@ -1860,9 +1860,9 @@ let producto = document.getElementById("filtroProducto").value
 
 api("datosGraficos",{inicio,fin,producto}).then(function(data){
 
-crearGrafico("graficoProductos", data.productos || [])
-crearGrafico("graficoMesas", data.mesas || [])
-crearGrafico("graficoFechas", data.fechas || [])
+crearGrafico("graficoProductos", data.productos || {})
+crearGrafico("graficoMesas", data.mesas || {})
+crearGrafico("graficoFechas", data.fechas || {})
 
 })
 
@@ -2362,7 +2362,9 @@ usuarioActual = res
 document.getElementById("loginScreen").style.display="none"
 
 // 🔥 AQUÍ ES EL CAMBIO IMPORTANTE
-api("inicializarSistema").then(()=>{
+app.post("/inicializarSistema",(req,res)=>{
+res.json({ok:true})
+})
 
 cargarProductos()
 cargarMesas()
