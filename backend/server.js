@@ -77,7 +77,7 @@ app.post("/dashboard", async (req, res) => {
     let productos = {}
 
     ventas.forEach(row => {
-      let total = Number(row.Total || 0)
+      let total = Number(row.Total || row.total || 0)
       let producto = row.Producto || row.producto || "Sin nombre"
 
       totalDia += total
@@ -160,7 +160,6 @@ res.json({ok:false,error:err.toString()})
 })
 
 app.post("/datosGraficos", async (req,res)=>{
-
 try{
 
 const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
@@ -171,12 +170,14 @@ const data = await response.json()
 
 let productos = {}
 let fechas = {}
+let mesas = {}
 
 data.forEach(row => {
 
-let prod = row.Producto || "Sin nombre"
+let prod = row.Producto || row.producto || "Sin nombre"
 let total = Number(row.Total || row.total || 0)
 let fecha = row.Fecha || row.fecha || "Sin fecha"
+let mesa = row.Mesa || row.mesa || "Mesa"
 
 if(!productos[prod]) productos[prod] = 0
 productos[prod] += total
@@ -184,17 +185,20 @@ productos[prod] += total
 if(!fechas[fecha]) fechas[fecha] = 0
 fechas[fecha] += total
 
+if(!mesas[mesa]) mesas[mesa] = 0
+mesas[mesa] += total
+
 })
 
 res.json({
 productos,
-fechas
+fechas,
+mesas // 🔥 IMPORTANTE
 })
 
 }catch(err){
 res.json({ok:false,error:err.toString()})
 }
-
 })
 
 app.post("/comparacionSemanas", async (req,res)=>{
@@ -212,7 +216,7 @@ let anterior = 0
 
 data.forEach(row=>{
 let total = Number(row.Total || 0)
-let fecha = new Date(row.Fecha)
+let fecha = new Date(row.Fecha || row.fecha)
 
 let hoy = new Date()
 let diff = (hoy - fecha) / (1000*60*60*24)
@@ -362,7 +366,6 @@ res.json({ok:false,error:err.toString()})
 })
 
 app.post("/mesasConConsumo", async (req,res)=>{
-
 try{
 
 const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
@@ -374,8 +377,10 @@ const data = await response.json()
 let mesas = {}
 
 data.forEach(row=>{
-let mesa = row.Mesa || "Mesa"
-if(mesa){
+let mesa = row.Mesa || row.mesa
+let total = Number(row.Total || row.total || 0)
+
+if(mesa && total > 0){
 mesas[mesa] = true
 }
 })
@@ -385,7 +390,6 @@ res.json(mesas)
 }catch(err){
 res.json({ok:false,error:err.toString()})
 }
-
 })
 
 app.post("/totalesPorMesa", async (req,res)=>{
@@ -401,8 +405,8 @@ const data = await response.json()
 let totales = {}
 
 data.forEach(row=>{
-let mesa = row.Mesa || "Mesa"
-let total = Number(row.Total || 0)
+let mesa = row.Mesa || row.mesa || "Mesa"
+let total = Number(row.Total || row.total || 0)
 
 if(!totales[mesa]) totales[mesa] = 0
 totales[mesa] += total
