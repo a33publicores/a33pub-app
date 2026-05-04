@@ -78,7 +78,7 @@ app.post("/dashboard", async (req, res) => {
 
     ventas.forEach(row => {
       let total = Number(row.Total || 0)
-      let producto = row.Producto || "Sin nombre"
+      let producto = row.Producto || row.producto || "Sin nombre"
 
       totalDia += total
 
@@ -144,7 +144,7 @@ const data = await response.json()
 let resumen = {}
 
 data.forEach(row=>{
-let mesa = row.Mesa || "Mesa"
+let mesa = row.Mesa || row.mesa || "Mesa"
 let total = Number(row.Total || 0)
 
 if(!resumen[mesa]) resumen[mesa] = 0
@@ -175,8 +175,8 @@ let fechas = {}
 data.forEach(row => {
 
 let prod = row.Producto || "Sin nombre"
-let total = Number(row.Total || 0)
-let fecha = row.Fecha || "Sin fecha"
+let total = Number(row.Total || row.total || 0)
+let fecha = row.Fecha || row.fecha || "Sin fecha"
 
 if(!productos[prod]) productos[prod] = 0
 productos[prod] += total
@@ -245,7 +245,7 @@ const data = await response.json()
 let metodos = {}
 
 data.forEach(row=>{
-let metodo = row.MetodoPago || "Otro"
+let metodo = row.MetodoPago || row.metodo || "Otro"
 let total = Number(row.Total || 0)
 
 if(!metodos[metodo]) metodos[metodo] = 0
@@ -349,7 +349,9 @@ const url = `https://opensheet.elk.sh/${sheetID}/Mesas`
 const response = await fetch(url)
 const data = await response.json()
 
-let lista = data.map(row => row.Nombre || row.Mesa || "Mesa")
+let lista = data.map(row => 
+  row.Nombre || row.nombre || row.Mesa || row.mesa || "Mesa"
+)
 
 res.json(lista)
 
