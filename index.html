@@ -1027,7 +1027,7 @@ let graficoFecha=null
 let graficoSemanas=null
 let graficoMetodos=null
 
-const URL = "https://script.google.com/macros/s/AKfycbxprCdAVErPOxaU09fuf5a4zARe6GQJTdbhBbkWdllcKTUaAGSks9nUElfj8tLp5ZsB/exec"
+const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbxprCdAVErPOxaU09fuf5a4zARe6GQJTdbhBbkWdllcKTUaAGSks9nUElfj8tLp5ZsB/exec"
 
 function api(accion, data = {}){
 
@@ -1035,10 +1035,15 @@ return new Promise((resolve, reject)=>{
 
 const callbackName = "cb_" + Date.now()
 
+// 🔥 definir callback global
 window[callbackName] = function(res){
 resolve(res)
+
+// limpiar
 delete window[callbackName]
-script.remove()
+if(script.parentNode){
+script.parentNode.removeChild(script)
+}
 }
 
 let params = new URLSearchParams()
@@ -1046,17 +1051,34 @@ let params = new URLSearchParams()
 params.append("accion", accion)
 params.append("callback", callbackName)
 
+// 🔥 agregar datos
 for(let key in data){
+if(data[key] !== undefined && data[key] !== null){
 params.append(key, data[key])
 }
-
-let script = document.createElement("script")
-script.src = URL + "?" + params.toString()
-
-script.onerror = function(){
-reject("Error cargando script")
 }
 
+// 🔥 crear script JSONP
+let script = document.createElement("script")
+script.src = URL_SCRIPT + "?" + params.toString()
+
+// 🔥 timeout de seguridad
+let timeout = setTimeout(()=>{
+delete window[callbackName]
+if(script.parentNode){
+script.parentNode.removeChild(script)
+}
+reject("Timeout: servidor no respondió")
+}, 10000)
+
+// 🔥 manejo de error
+script.onerror = function(){
+clearTimeout(timeout)
+delete window[callbackName]
+reject("Error cargando script (URL incorrecta o deploy)")
+}
+
+// agregar al DOM
 document.body.appendChild(script)
 
 })
