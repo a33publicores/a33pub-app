@@ -4,11 +4,19 @@ const cors = require("cors")
 const app = express()
 app.set("trust proxy", 1)
 
-app.use(cors({
-  origin: "*", // 🔥 permite cualquier origen (rápido para pruebas)
-  methods: ["GET","POST"],
-  allowedHeaders: ["Content-Type"]
-}))
+// 🔥 CORS COMPLETO (SOLUCIÓN DEFINITIVA)
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*")
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+  res.header("Access-Control-Allow-Headers", "Content-Type")
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200)
+  }
+
+  next()
+})
+
 app.use(express.json())
 
 // LOGIN
@@ -30,6 +38,7 @@ res.json({ok:false})
 
 // ROOT (IMPORTANTE)
 app.get("/", (req,res)=>{
+console.log("PING ROOT")
 res.status(200).send("Backend activo 🚀")
 })
 
