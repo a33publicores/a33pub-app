@@ -121,12 +121,42 @@ app.post("/obtenerResumenMesas",(req,res)=>{
 res.json([])
 })
 
-app.post("/datosGraficos",(req,res)=>{
-res.json({
-productos:{},
-mesas:{},
-fechas:{}
+app.post("/datosGraficos", async (req,res)=>{
+
+try{
+
+const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
+const url = `https://opensheet.elk.sh/${sheetID}/Ventas`
+
+const response = await fetch(url)
+const data = await response.json()
+
+let productos = {}
+let fechas = {}
+
+data.forEach(row => {
+
+let prod = row.Producto || "Sin nombre"
+let total = Number(row.Total || 0)
+let fecha = row.Fecha || "Sin fecha"
+
+if(!productos[prod]) productos[prod] = 0
+productos[prod] += total
+
+if(!fechas[fecha]) fechas[fecha] = 0
+fechas[fecha] += total
+
 })
+
+res.json({
+productos,
+fechas
+})
+
+}catch(err){
+res.json({ok:false,error:err.toString()})
+}
+
 })
 
 app.post("/comparacionSemanas",(req,res)=>{
@@ -175,21 +205,50 @@ res.json({ok:true})
 
 })
 
-app.post("/obtenerMesas",(req,res)=>{
-res.json(mesas)
+app.post("/obtenerMesas", async (req,res)=>{
+
+try{
+
+const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
+const url = `https://opensheet.elk.sh/${sheetID}/Mesas`
+
+const response = await fetch(url)
+const data = await response.json()
+
+let lista = data.map(row => row.Nombre || row.Mesa || "Mesa")
+
+res.json(lista)
+
+}catch(err){
+res.json({ok:false,error:err.toString()})
+}
+
 })
 
-app.post("/mesasConConsumo",(req,res)=>{
+app.post("/mesasConConsumo", async (req,res)=>{
 
-let data = {}
+try{
 
-Object.keys(consumos).forEach(m=>{
-if(consumos[m] > 0){
-data[m] = true
+const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
+const url = `https://opensheet.elk.sh/${sheetID}/Ventas`
+
+const response = await fetch(url)
+const data = await response.json()
+
+let mesas = {}
+
+data.forEach(row=>{
+let mesa = row.Mesa || "Mesa"
+if(mesa){
+mesas[mesa] = true
 }
 })
 
-res.json(data)
+res.json(mesas)
+
+}catch(err){
+res.json({ok:false,error:err.toString()})
+}
 
 })
 
