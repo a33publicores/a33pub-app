@@ -35,10 +35,6 @@ app.listen(PORT, ()=>{
 console.log("Servidor corriendo en " + PORT)
 })
 
-app.post("/obtenerMesas",(req,res)=>{
-res.json(["Mesa 1","Mesa 2"])
-})
-
 app.post("/dashboard",(req,res)=>{
 res.json({
 totalDia:0,
