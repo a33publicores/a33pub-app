@@ -1027,7 +1027,7 @@ let graficoFecha=null
 let graficoSemanas=null
 let graficoMetodos=null
 
-const URL = "https://a33pub-app-production.up.railway.app"
+const URL = "a33pub-app-production.up.railway.app" // 👈 pega tu URL real
 
 function api(accion, data = {}){
 
@@ -1038,9 +1038,12 @@ headers: {
 },
 body: JSON.stringify(data)
 })
-.then(res => res.json())
+.then(res => {
+if(!res.ok) throw new Error("Error HTTP")
+return res.json()
+})
 .catch(err => {
-console.error(err)
+console.error("API ERROR:", err)
 throw "Error conectando con el servidor"
 })
 
