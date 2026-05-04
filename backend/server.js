@@ -1,24 +1,26 @@
 const express = require("express")
 const cors = require("cors")
 const fetch = require("node-fetch")
+
 const app = express()
 
-app.options("*", (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", "*")
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-  res.setHeader("Access-Control-Allow-Headers", "*")
-  res.sendStatus(200)
-})
 app.set("trust proxy", 1)
 
-// 🔥 CORS COMPLETO (SOLUCIÓN DEFINITIVA)
+/* 🔥 CORS PROFESIONAL (SOLUCIÓN REAL) */
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}))
+
+/* 🔥 HEADERS MANUALES EXTRA (POR SI RAILWAY BLOQUEA) */
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*")
   res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-  res.header("Access-Control-Allow-Headers", "Content-Type")
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
   if (req.method === "OPTIONS") {
-    return res.sendStatus(200)
+    return res.status(200).end()
   }
 
   next()
@@ -26,7 +28,9 @@ app.use((req, res, next) => {
 
 app.use(express.json())
 
+// ==========================
 // LOGIN
+// ==========================
 app.post("/login", (req,res)=>{
 
 const {usuario,clave} = req.body
@@ -43,32 +47,37 @@ res.json({ok:false})
 
 })
 
-// ROOT (IMPORTANTE)
+// ==========================
+// ROOT
+// ==========================
 app.get("/", (req,res)=>{
 console.log("PING ROOT")
 res.status(200).send("Backend activo 🚀")
 })
 
-// PORT RAILWAY
-const PORT = process.env.PORT || 3000
-
-app.listen(PORT, ()=>{
-console.log("Servidor corriendo en " + PORT)
-})
-
+// ==========================
+// DASHBOARD (CON GOOGLE SHEETS)
+// ==========================
 app.post("/dashboard", async (req, res) => {
   try {
 
-    const url = "https://opensheet.elk.sh/1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc/Ventas"
+    const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
 
-    const response = await fetch(url)
-    const data = await response.json()
+    const urlVentas = `https://opensheet.elk.sh/${sheetID}/Ventas`
+    const urlInventario = `https://opensheet.elk.sh/${sheetID}/Inventario`
+
+    const [ventasRes, inventarioRes] = await Promise.all([
+      fetch(urlVentas),
+      fetch(urlInventario)
+    ])
+
+    const ventas = await ventasRes.json()
+    const inventario = await inventarioRes.json()
 
     let totalDia = 0
     let productos = {}
 
-    data.forEach(row => {
-
+    ventas.forEach(row => {
       let total = Number(row.Total || 0)
       let producto = row.Producto || "Sin nombre"
 
@@ -79,7 +88,6 @@ app.post("/dashboard", async (req, res) => {
       }
 
       productos[producto] += total
-
     })
 
     let productoTop = "-"
@@ -91,15 +99,21 @@ app.post("/dashboard", async (req, res) => {
     }
 
     res.json({
+      ok:true,
       totalDia,
-      productoTop
+      productoTop,
+      inventario
     })
 
   } catch (error) {
+    console.log("ERROR DASHBOARD:", error)
     res.json({ ok:false, error:error.toString() })
   }
 })
 
+// ==========================
+// DEMÁS ENDPOINTS (NO TOCADOS)
+// ==========================
 app.post("/obtenerProductos",(req,res)=>{
 res.json([])
 })
@@ -142,9 +156,11 @@ transferencia:0
 })
 
 let mesas = []
-let consumos = {} // { "Mesa 1": total }
+let consumos = {}
 
-/* CREAR MESA */
+// ==========================
+// MESAS
+// ==========================
 app.post("/agregarMesa",(req,res)=>{
 
 const {nombre} = req.body
@@ -154,19 +170,16 @@ return res.json({ok:false})
 }
 
 mesas.push(nombre)
-
 consumos[nombre] = 0
 
 res.json({ok:true})
 
 })
 
-/* OBTENER MESAS */
 app.post("/obtenerMesas",(req,res)=>{
 res.json(mesas)
 })
 
-/* MESAS CON CONSUMO */
 app.post("/mesasConConsumo",(req,res)=>{
 
 let data = {}
@@ -181,7 +194,15 @@ res.json(data)
 
 })
 
-/* TOTALES POR MESA */
 app.post("/totalesPorMesa",(req,res)=>{
 res.json(consumos)
+})
+
+// ==========================
+// PORT
+// ==========================
+const PORT = process.env.PORT || 3000
+
+app.listen(PORT, ()=>{
+console.log("Servidor corriendo en " + PORT)
 })
