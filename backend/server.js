@@ -114,7 +114,6 @@ app.post("/dashboard", async (req, res) => {
 // DEMÁS ENDPOINTS (NO TOCADOS)
 // ==========================
 app.post("/obtenerProductos", async (req,res)=>{
-
 try{
 
 const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
@@ -123,12 +122,26 @@ const url = `https://opensheet.elk.sh/${sheetID}/Inventario`
 const response = await fetch(url)
 const data = await response.json()
 
-res.json(data)
+let productos = data.map(p=>{
+
+let stock = Number(p.Stock || p.stock || 0)
+let vendido = Number(p.Vendido || p.vendido || 0)
+
+return {
+nombre: p.Nombre || p.nombre,
+precio: Number(p.Precio || p.precio || 0),
+stock,
+vendido,
+restante: stock - vendido
+}
+
+})
+
+res.json(productos)
 
 }catch(err){
 res.json({ok:false,error:err.toString()})
 }
-
 })
 
 app.post("/obtenerResumenMesas", async (req,res)=>{
@@ -211,20 +224,21 @@ const url = `https://opensheet.elk.sh/${sheetID}/Ventas`
 const response = await fetch(url)
 const data = await response.json()
 
-let actual = 0
-let anterior = 0
+let actual = {}
+let anterior = {}
 
 data.forEach(row=>{
-let total = Number(row.Total || 0)
+let total = Number(row.Total || row.total || 0)
 let fecha = new Date(row.Fecha || row.fecha)
+let dia = fecha.toLocaleDateString("es-CO",{weekday:"long"})
 
 let hoy = new Date()
 let diff = (hoy - fecha) / (1000*60*60*24)
 
 if(diff <= 7){
-actual += total
+actual[dia] = (actual[dia] || 0) + total
 }else if(diff <= 14){
-anterior += total
+anterior[dia] = (anterior[dia] || 0) + total
 }
 })
 
@@ -249,7 +263,7 @@ const data = await response.json()
 let metodos = {}
 
 data.forEach(row=>{
-let metodo = row.MetodoPago || row.metodo || "Otro"
+let metodo = (row.MetodoPago || row.metodo || "").toLowerCase().trim()
 let total = Number(row.Total || 0)
 
 if(!metodos[metodo]) metodos[metodo] = 0
