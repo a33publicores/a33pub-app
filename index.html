@@ -1897,24 +1897,25 @@ api("datosGraficos",{inicio,fin,producto})
 
 console.log("GRAFICOS:", data)
 
-/* 🔥 PROTECCIÓN */
-if(!data || !data.productos){
-console.warn("Sin datos de gráficos")
+/* 🔥 VALIDACIÓN FUERTE */
+if(!data){
+console.warn("No hay data")
 return
 }
 
-/* ✅ GRAFICO PRODUCTOS (OK) */
+/* PRODUCTOS */
 crearGrafico("graficoProductos", data.productos || {})
 
-/* 🔥 AQUÍ ESTABA EL ERROR */
+/* 🔥 AGRUPAR POR DÍA */
 const datosPorDia = agruparPorDiaSemana(data.fechas || {})
 
-/* ❌ ANTES:
-crearGrafico("graficoFechas", data.fechas || {})
-*/
+console.log("POR DIA:", datosPorDia)
 
-/* ✅ AHORA CORRECTO (POR DÍA DE SEMANA) */
-crearGrafico("graficoFechas", datosPorDia)
+/* 🔥 USAR CANVAS CORRECTO */
+crearGrafico("graficoMesas", datosPorDia)
+
+/* FECHAS NORMAL */
+crearGrafico("graficoFechas", data.fechas || {})
 
 })
 .catch(err=>{
@@ -2320,7 +2321,7 @@ api("obtenerProductos").then(function(data){
 let select = document.getElementById("filtroProducto")
 
 /* 🔥 LIMPIAR SIEMPRE */
-select.innerHTML = '<option value="Todos">Todos</option>'
+select.innerHTML = <option value="Todos">Todos</option>
 
 (data || []).forEach(p=>{
 
@@ -2458,4 +2459,3 @@ alert("Error conectando con el servidor")
 
 </body>
 </html>
-
