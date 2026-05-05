@@ -155,25 +155,65 @@ app.post("/dashboard", async (req, res) => {
 // ==========================
 // DEMÁS ENDPOINTS (NO TOCADOS)
 // ==========================
-app.post("/obtenerProductos", async (req, res) => {
-  try {
+app.post("/obtenerProductos", async (req,res)=>{
 
-    const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
-    const url = `https://opensheet.elk.sh/${sheetID}/Inventario`
+try{
 
-    const response = await fetch(url)
-    const data = await response.json()
+const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
 
-    const productos = data.map(p => ({
-      nombre: (p.Producto || p.producto || "").toString().trim(),
-      precio: Number((p.Precio || p.precio || 0).toString().trim()) || 0
-    })).filter(p => p.nombre)
+const urlInventario = `https://opensheet.elk.sh/${sheetID}/Inventario`
+const urlVentas = `https://opensheet.elk.sh/${sheetID}/Ventas`
 
-    res.json(productos)
+const [invRes, venRes] = await Promise.all([
+fetch(urlInventario),
+fetch(urlVentas)
+])
 
-  } catch (error) {
-    res.json([])
-  }
+const inventario = await invRes.json()
+const ventas = await venRes.json()
+
+/* 🔥 MAPA DE VENTAS */
+let vendidos = {}
+
+ventas.forEach(row=>{
+
+let nombre = (row.Nombre || "").trim()
+let cantidad = Number(row.Cantidad || 0)
+
+if(!nombre) return
+
+if(!vendidos[nombre]){
+vendidos[nombre] = 0
+}
+
+vendidos[nombre] += cantidad
+
+})
+
+/* 🔥 RESULTADO FINAL */
+let resultado = inventario.map(p=>{
+
+let nombre = (p.Producto || p.Nombre || "").trim()
+let stock = Number(p.Cantidad || p.Stock || 0)
+
+let vendido = vendidos[nombre] || 0
+
+return {
+nombre,
+stock,
+vendido,
+restante: stock - vendido
+}
+
+})
+
+res.json(resultado)
+
+}catch(e){
+console.log("ERROR INVENTARIO:", e)
+res.json([])
+}
+
 })
 
 app.post("/obtenerResumenMesas", async (req,res)=>{
@@ -318,32 +358,41 @@ res.json({ok:false,error:err.toString()})
 
 })
 
-app.post("/ventasPorMetodoPago", async (req, res) => {
-  try {
+app.post("/ventasPorMetodoPago", async (req,res)=>{
 
-    const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
-    const url = `https://opensheet.elk.sh/${sheetID}/Ventas`
+try{
 
-    const response = await fetch(url)
-    const data = await response.json()
+const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
 
-    let metodos = {}
+const url = `https://opensheet.elk.sh/${sheetID}/Ventas`
 
-    data.forEach(row => {
+const response = await fetch(url)
+const data = await response.json()
 
-      let metodo = (row["Metodo de Pago"] || "").trim()
-      let total = Number((row.Total || row.total || 0).toString().trim()) || 0
+let metodos = {}
 
-      if (!metodo) return
+data.forEach(row=>{
 
-      metodos[metodo] = (metodos[metodo] || 0) + total
-    })
+let metodo = (row["Metodo de Pago"] || "").trim()
+let total = Number(String(row.Total || 0).replace(/[^0-9.-]+/g,""))
 
-    res.json(metodos)
+if(!metodo) return
 
-  } catch (error) {
-    res.json({})
-  }
+if(!metodos[metodo]){
+metodos[metodo] = 0
+}
+
+metodos[metodo] += total
+
+})
+
+res.json(metodos)
+
+}catch(e){
+console.log("ERROR METODOS:", e)
+res.json({})
+}
+
 })
 
 app.post("/obtenerInversiones", async (req,res)=>{
