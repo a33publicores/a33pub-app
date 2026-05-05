@@ -2362,9 +2362,7 @@ usuarioActual = res
 document.getElementById("loginScreen").style.display="none"
 
 // 🔥 AQUÍ ES EL CAMBIO IMPORTANTE
-app.post("/inicializarSistema",(req,res)=>{
-res.json({ok:true})
-})
+api("inicializarSistema").then(()=>{
 
 cargarProductos()
 cargarMesas()
