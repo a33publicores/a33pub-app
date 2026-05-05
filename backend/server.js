@@ -204,44 +204,82 @@ res.json({ok:false,error:err.toString()})
 
 })
 
-app.post("/datosGraficos", async (req, res) => {
-  try {
+app.post("/datosGraficos", async (req,res)=>{
 
-    const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
-    const url = `https://opensheet.elk.sh/${sheetID}/Ventas`
+try{
 
-    const response = await fetch(url)
-    const data = await response.json()
+const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
+const url = `https://opensheet.elk.sh/${sheetID}/Ventas`
 
-    let productos = {}
-    let fechas = {}
+const r = await fetch(url)
+const data = await r.json()
 
-    data.forEach(row => {
+let productos = {}
+let mesas = {}
+let fechas = {}
 
-      let prod = (row.Nombre || "").trim()
-      let total = Number(row.Total || 0)
-      let fecha = (row.Fecha || "").trim()
+data.forEach(row=>{
 
-      if(prod){
-        productos[prod] = (productos[prod] || 0) + total
-      }
+// 🔥 CAMPOS CORRECTOS DEL SHEET
+let producto = (row.Nombre || "").trim()
+let mesa = (row.Mesa || "").trim()
+let fecha = (row.Fecha || "").split(" ")[0]
 
-      if(fecha){
-        fechas[fecha] = (fechas[fecha] || 0) + total
-      }
+// 🔥 LIMPIAR PRECIO ($ y ,)
+let precio = Number(
+String(row.Precio || 0).replace(/[^0-9]/g,"")
+)
 
-    })
+let cantidad = Number(row.Cantidad || 0)
 
-    res.json({
-      productos,
-      mesas:{}, // puedes luego mejorarlo
-      fechas
-    })
+// 🔥 CALCULAR TOTAL
+let total = precio * cantidad
 
-  } catch (error) {
-    console.log("ERROR GRAFICOS:", error)
-    res.json({ productos:{}, mesas:{}, fechas:{} })
-  }
+if(!producto || total <= 0) return
+
+// =====================
+// PRODUCTOS
+// =====================
+if(!productos[producto]) productos[producto]=0
+productos[producto]+=total
+
+// =====================
+// MESAS
+// =====================
+if(mesa){
+
+if(!mesas[mesa]) mesas[mesa]=0
+mesas[mesa]+=total
+
+}
+
+// =====================
+// FECHAS
+// =====================
+if(fecha){
+
+if(!fechas[fecha]) fechas[fecha]=0
+fechas[fecha]+=total
+
+}
+
+})
+
+res.json({
+productos,
+mesas,
+fechas
+})
+
+}catch(e){
+console.log("ERROR GRAFICOS:", e)
+res.json({
+productos:{},
+mesas:{},
+fechas:{}
+})
+}
+
 })
 
 app.post("/comparacionSemanas", async (req,res)=>{
