@@ -2455,6 +2455,34 @@ alert("Error conectando con el servidor")
 
 }
 
+function obtenerInventarioCompleto() {
+
+  const hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Inventario")
+  const datos = hoja.getDataRange().getValues()
+
+  const headers = datos[0]
+
+  return datos.slice(1).map((fila, i) => {
+
+    let obj = {}
+
+    headers.forEach((h, j) => {
+      obj[String(h).toLowerCase().trim()] = fila[j]
+    })
+
+    return {
+      nombre: obj.nombre || "",
+      precio: Number(obj.precio) || 0,
+      stock: Number(obj.stock) || 0,
+      vendido: Number(obj.vendido) || 0,
+      restante: Number(obj.restante) || 0,
+      codigo: obj.codigo || i
+    }
+
+  })
+
+}
+
 </script>
 
 </body>
