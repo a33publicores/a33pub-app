@@ -83,7 +83,7 @@ app.post("/inicializarSistema", async (req, res) => {
       restante: Number(p.Restante || 0)
     }))
 
-    let listaMesas = mesasData.map(m => (m.Mesa || "").trim())
+    let lista = data.map(m => (m.Nombre || "").trim())
 
     res.json({
       ok: true,
@@ -118,7 +118,7 @@ app.post("/dashboard", async (req, res) => {
 
     ventas.forEach(row => {
 
-      let producto = (row.Producto || row.producto || "").toString().trim()
+      let prod = (row.Nombre || "").trim()
       let total = Number((row.Total || row.total || 0).toString().trim()) || 0
 
       if (!producto) return
@@ -219,7 +219,7 @@ app.post("/datosGraficos", async (req, res) => {
 
     data.forEach(row => {
 
-      let prod = (row.Producto || "").trim()
+      let prod = (row.Nombre || "").trim()
       let total = Number(row.Total || 0)
       let fecha = (row.Fecha || "").trim()
 
@@ -294,7 +294,7 @@ app.post("/ventasPorMetodoPago", async (req, res) => {
 
     data.forEach(row => {
 
-      let metodo = (row.MetodoPago || row.metodopago || "").toString().trim()
+      let metodo = (row["Metodo de Pago"] || "").trim()
       let total = Number((row.Total || row.total || 0).toString().trim()) || 0
 
       if (!metodo) return
@@ -344,7 +344,7 @@ app.post("/cierreDeCaja", async (req, res) => {
 
     data.forEach(row => {
 
-      let metodo = (row.MetodoPago || "").toString().trim().toLowerCase()
+      let metodo = (row["Metodo de Pago"] || "").trim()
       let valor = Number((row.Total || 0).toString().trim()) || 0
 
       total += valor
@@ -404,7 +404,7 @@ app.post("/obtenerMesas", async (req, res) => {
     const response = await fetch(url)
     const data = await response.json()
 
-    let lista = data.map(m => (m.Mesa || "").trim())
+    let lista = data.map(m => (m.Nombre || "").trim())
 
     res.json(lista)
 
