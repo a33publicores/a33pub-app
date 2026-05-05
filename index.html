@@ -2427,7 +2427,7 @@ usuarioActual = res
 document.getElementById("loginScreen").style.display="none"
 
 // 🔥 AQUÍ ES EL CAMBIO IMPORTANTE
-api("inicializarSistema").then(()=>{
+Promise.resolve().then(()=>{
 
 cargarProductos()
 cargarMesas()
