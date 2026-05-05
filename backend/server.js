@@ -57,6 +57,46 @@ res.status(200).send("Backend activo 🚀")
 // ==========================
 // DASHBOARD (CON GOOGLE SHEETS)
 // ==========================
+
+app.post("/inicializarSistema", async (req, res) => {
+  try {
+
+    const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
+
+    const urlProductos = `https://opensheet.elk.sh/${sheetID}/Inventario`
+    const urlMesas = `https://opensheet.elk.sh/${sheetID}/Mesas`
+
+    const [prodRes, mesasRes] = await Promise.all([
+      fetch(urlProductos),
+      fetch(urlMesas)
+    ])
+
+    const productos = await prodRes.json()
+    const mesasData = await mesasRes.json()
+
+    // 🔥 LIMPIAR
+    let listaProductos = productos.map(p => ({
+      nombre: (p.Producto || "").trim(),
+      precio: Number(p.Precio || 0),
+      stock: Number(p.Stock || 0),
+      vendido: Number(p.Vendido || 0),
+      restante: Number(p.Restante || 0)
+    }))
+
+    let listaMesas = mesasData.map(m => (m.Mesa || "").trim())
+
+    res.json({
+      ok: true,
+      productos: listaProductos,
+      mesas: listaMesas
+    })
+
+  } catch (error) {
+    console.log("ERROR INIT:", error)
+    res.json({ ok:false })
+  }
+})
+
 app.post("/dashboard", async (req, res) => {
   try {
 
@@ -176,28 +216,32 @@ app.post("/datosGraficos", async (req, res) => {
 
     let productos = {}
     let fechas = {}
-    let mesas = {}
 
     data.forEach(row => {
 
-      let producto = (row.Producto || row.producto || "").toString().trim()
-      let fecha = (row.Fecha || row.fecha || "").toString().trim()
-      let mesa = (row.Mesa || row.mesa || "").toString().trim()
-      let total = Number((row.Total || row.total || 0).toString().trim()) || 0
+      let prod = (row.Producto || "").trim()
+      let total = Number(row.Total || 0)
+      let fecha = (row.Fecha || "").trim()
 
-      if (producto) productos[producto] = (productos[producto] || 0) + total
-      if (fecha) fechas[fecha] = (fechas[fecha] || 0) + total
-      if (mesa) mesas[mesa] = (mesas[mesa] || 0) + total
+      if(prod){
+        productos[prod] = (productos[prod] || 0) + total
+      }
+
+      if(fecha){
+        fechas[fecha] = (fechas[fecha] || 0) + total
+      }
+
     })
 
     res.json({
       productos,
-      fechas,
-      mesas
+      mesas:{}, // puedes luego mejorarlo
+      fechas
     })
 
   } catch (error) {
-    res.json({ productos: {}, fechas: {}, mesas: {} })
+    console.log("ERROR GRAFICOS:", error)
+    res.json({ productos:{}, mesas:{}, fechas:{} })
   }
 })
 
@@ -360,11 +404,9 @@ app.post("/obtenerMesas", async (req, res) => {
     const response = await fetch(url)
     const data = await response.json()
 
-    const mesas = data.map(m =>
-      (m.Mesa || m.mesa || "").toString().trim()
-    ).filter(m => m)
+    let lista = data.map(m => (m.Mesa || "").trim())
 
-    res.json(mesas)
+    res.json(lista)
 
   } catch (error) {
     res.json([])
