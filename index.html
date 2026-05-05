@@ -2259,9 +2259,6 @@ api("obtenerProductos").then(function(data){
 
 let select = document.getElementById("filtroProducto")
 
-/* 🔥 LIMPIAR PARA NO DUPLICAR */
-select.innerHTML = `<option value="Todos">Todos</option>`
-
 (data || []).forEach(p=>{
 
 let opt = document.createElement("option")
