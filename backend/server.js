@@ -157,7 +157,7 @@ const data = await response.json()
 let resumen = {}
 
 data.forEach(row=>{
-let mesa = row.Mesa || row.mesa || "Mesa"
+let mesa = (row.Mesa || row.mesa || "").trim()
 let total = Number(row.Total || 0)
 
 if(!resumen[mesa]) resumen[mesa] = 0
@@ -190,7 +190,7 @@ data.forEach(row => {
 let prod = row.Producto || row.producto || "Sin nombre"
 let total = Number(row.Total || row.total || 0)
 let fecha = row.Fecha || row.fecha || "Sin fecha"
-let mesa = row.Mesa || row.mesa || "Mesa"
+let mesa = (row.Mesa || row.mesa || "").trim()
 
 if(!productos[prod]) productos[prod] = 0
 productos[prod] += total
@@ -391,7 +391,7 @@ const data = await response.json()
 let mesas = {}
 
 data.forEach(row=>{
-let mesa = row.Mesa || row.mesa
+let mesa = (row.Mesa || row.mesa || "").trim()
 let total = Number(row.Total || row.total || 0)
 
 if(mesa && total > 0){
@@ -419,7 +419,7 @@ const data = await response.json()
 let totales = {}
 
 data.forEach(row=>{
-let mesa = row.Mesa || row.mesa || "Mesa"
+let mesa = (row.Mesa || row.mesa || "").trim()
 let total = Number(row.Total || row.total || 0)
 
 if(!totales[mesa]) totales[mesa] = 0
