@@ -2320,9 +2320,6 @@ api("obtenerProductos").then(function(data){
 
 let select = document.getElementById("filtroProducto")
 
-/* 🔥 LIMPIAR SIEMPRE */
-select.innerHTML = <option value="Todos">Todos</option>
-
 (data || []).forEach(p=>{
 
 let nombre = (p.nombre || "").trim()
