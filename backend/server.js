@@ -77,12 +77,15 @@ app.post("/dashboard", async (req, res) => {
     let productos = {}
 
     ventas.forEach(row => {
-      let total = Number(row.Total || row.total || 0)
-      let producto = row.Producto || row.producto || "Sin nombre"
+
+      let producto = (row.Producto || row.producto || "").toString().trim()
+      let total = Number((row.Total || row.total || 0).toString().trim()) || 0
+
+      if (!producto) return
 
       totalDia += total
 
-      if(!productos[producto]){
+      if (!productos[producto]) {
         productos[producto] = 0
       }
 
@@ -91,14 +94,14 @@ app.post("/dashboard", async (req, res) => {
 
     let productoTop = "-"
 
-    if(Object.keys(productos).length > 0){
-      productoTop = Object.keys(productos).reduce((a,b)=>
+    if (Object.keys(productos).length > 0) {
+      productoTop = Object.keys(productos).reduce((a, b) =>
         productos[a] > productos[b] ? a : b
       )
     }
 
     res.json({
-      ok:true,
+      ok: true,
       totalDia,
       productoTop,
       inventario
@@ -106,42 +109,32 @@ app.post("/dashboard", async (req, res) => {
 
   } catch (error) {
     console.log("ERROR DASHBOARD:", error)
-    res.json({ ok:false, error:error.toString() })
+    res.json({ ok: false, error: error.toString() })
   }
 })
 
 // ==========================
 // DEMÁS ENDPOINTS (NO TOCADOS)
 // ==========================
-app.post("/obtenerProductos", async (req,res)=>{
-try{
+app.post("/obtenerProductos", async (req, res) => {
+  try {
 
-const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
-const url = `https://opensheet.elk.sh/${sheetID}/Inventario`
+    const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
+    const url = `https://opensheet.elk.sh/${sheetID}/Inventario`
 
-const response = await fetch(url)
-const data = await response.json()
+    const response = await fetch(url)
+    const data = await response.json()
 
-let productos = data.map(p=>{
+    const productos = data.map(p => ({
+      nombre: (p.Producto || p.producto || "").toString().trim(),
+      precio: Number((p.Precio || p.precio || 0).toString().trim()) || 0
+    })).filter(p => p.nombre)
 
-let stock = Number(p.Stock || p.stock || 0)
-let vendido = Number(p.Vendido || p.vendido || 0)
+    res.json(productos)
 
-return {
-nombre: p.Nombre || p.nombre,
-precio: Number(p.Precio || p.precio || 0),
-stock,
-vendido,
-restante: stock - vendido
-}
-
-})
-
-res.json(productos)
-
-}catch(err){
-res.json({ok:false,error:err.toString()})
-}
+  } catch (error) {
+    res.json([])
+  }
 })
 
 app.post("/obtenerResumenMesas", async (req,res)=>{
@@ -172,46 +165,40 @@ res.json({ok:false,error:err.toString()})
 
 })
 
-app.post("/datosGraficos", async (req,res)=>{
-try{
+app.post("/datosGraficos", async (req, res) => {
+  try {
 
-const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
-const url = `https://opensheet.elk.sh/${sheetID}/Ventas`
+    const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
+    const url = `https://opensheet.elk.sh/${sheetID}/Ventas`
 
-const response = await fetch(url)
-const data = await response.json()
+    const response = await fetch(url)
+    const data = await response.json()
 
-let productos = {}
-let fechas = {}
-let mesas = {}
+    let productos = {}
+    let fechas = {}
+    let mesas = {}
 
-data.forEach(row => {
+    data.forEach(row => {
 
-let prod = row.Producto || row.producto || "Sin nombre"
-let total = Number(row.Total || row.total || 0)
-let fecha = row.Fecha || row.fecha || "Sin fecha"
-let mesa = (row.Mesa || row.mesa || "").trim()
+      let producto = (row.Producto || row.producto || "").toString().trim()
+      let fecha = (row.Fecha || row.fecha || "").toString().trim()
+      let mesa = (row.Mesa || row.mesa || "").toString().trim()
+      let total = Number((row.Total || row.total || 0).toString().trim()) || 0
 
-if(!productos[prod]) productos[prod] = 0
-productos[prod] += total
+      if (producto) productos[producto] = (productos[producto] || 0) + total
+      if (fecha) fechas[fecha] = (fechas[fecha] || 0) + total
+      if (mesa) mesas[mesa] = (mesas[mesa] || 0) + total
+    })
 
-if(!fechas[fecha]) fechas[fecha] = 0
-fechas[fecha] += total
+    res.json({
+      productos,
+      fechas,
+      mesas
+    })
 
-if(!mesas[mesa]) mesas[mesa] = 0
-mesas[mesa] += total
-
-})
-
-res.json({
-productos,
-fechas,
-mesas // 🔥 IMPORTANTE
-})
-
-}catch(err){
-res.json({ok:false,error:err.toString()})
-}
+  } catch (error) {
+    res.json({ productos: {}, fechas: {}, mesas: {} })
+  }
 })
 
 app.post("/comparacionSemanas", async (req,res)=>{
@@ -250,32 +237,32 @@ res.json({ok:false,error:err.toString()})
 
 })
 
-app.post("/ventasPorMetodoPago", async (req,res)=>{
+app.post("/ventasPorMetodoPago", async (req, res) => {
+  try {
 
-try{
+    const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
+    const url = `https://opensheet.elk.sh/${sheetID}/Ventas`
 
-const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
-const url = `https://opensheet.elk.sh/${sheetID}/Ventas`
+    const response = await fetch(url)
+    const data = await response.json()
 
-const response = await fetch(url)
-const data = await response.json()
+    let metodos = {}
 
-let metodos = {}
+    data.forEach(row => {
 
-data.forEach(row=>{
-let metodo = (row.MetodoPago || row.metodo || "").toLowerCase().trim()
-let total = Number(row.Total || 0)
+      let metodo = (row.MetodoPago || row.metodopago || "").toString().trim()
+      let total = Number((row.Total || row.total || 0).toString().trim()) || 0
 
-if(!metodos[metodo]) metodos[metodo] = 0
-metodos[metodo] += total
-})
+      if (!metodo) return
 
-res.json(metodos)
+      metodos[metodo] = (metodos[metodo] || 0) + total
+    })
 
-}catch(err){
-res.json({ok:false,error:err.toString()})
-}
+    res.json(metodos)
 
+  } catch (error) {
+    res.json({})
+  }
 })
 
 app.post("/obtenerInversiones", async (req,res)=>{
@@ -296,44 +283,51 @@ res.json({ok:false,error:err.toString()})
 
 })
 
-app.post("/cierreDeCaja", async (req,res)=>{
+app.post("/cierreDeCaja", async (req, res) => {
+  try {
 
-try{
+    const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
+    const url = `https://opensheet.elk.sh/${sheetID}/Ventas`
 
-const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
-const url = `https://opensheet.elk.sh/${sheetID}/Ventas`
+    const response = await fetch(url)
+    const data = await response.json()
 
-const response = await fetch(url)
-const data = await response.json()
+    let total = 0
+    let efectivo = 0
+    let nequi = 0
+    let daviplata = 0
+    let transferencia = 0
 
-let total = 0
-let metodos = {
-efectivo:0,
-nequi:0,
-daviplata:0,
-transferencia:0
-}
+    data.forEach(row => {
 
-data.forEach(row=>{
-let metodo = (row.MetodoPago || "").toLowerCase()
-let valor = Number(row.Total || 0)
+      let metodo = (row.MetodoPago || "").toString().trim().toLowerCase()
+      let valor = Number((row.Total || 0).toString().trim()) || 0
 
-total += valor
+      total += valor
 
-if(metodos[metodo] !== undefined){
-metodos[metodo] += valor
-}
-})
+      if (metodo.includes("efectivo")) efectivo += valor
+      if (metodo.includes("nequi")) nequi += valor
+      if (metodo.includes("davi")) daviplata += valor
+      if (metodo.includes("trans")) transferencia += valor
+    })
 
-res.json({
-total,
-...metodos
-})
+    res.json({
+      total,
+      efectivo,
+      nequi,
+      daviplata,
+      transferencia
+    })
 
-}catch(err){
-res.json({ok:false,error:err.toString()})
-}
-
+  } catch (error) {
+    res.json({
+      total: 0,
+      efectivo: 0,
+      nequi: 0,
+      daviplata: 0,
+      transferencia: 0
+    })
+  }
 })
 
 let mesas = []
@@ -357,81 +351,83 @@ res.json({ok:true})
 
 })
 
-app.post("/obtenerMesas", async (req,res)=>{
+app.post("/obtenerMesas", async (req, res) => {
+  try {
 
-try{
+    const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
+    const url = `https://opensheet.elk.sh/${sheetID}/Mesas`
 
-const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
-const url = `https://opensheet.elk.sh/${sheetID}/Mesas`
+    const response = await fetch(url)
+    const data = await response.json()
 
-const response = await fetch(url)
-const data = await response.json()
+    const mesas = data.map(m =>
+      (m.Mesa || m.mesa || "").toString().trim()
+    ).filter(m => m)
 
-let lista = data.map(row => 
-  row.Nombre || row.nombre || row.Mesa || row.mesa || "Mesa"
-)
+    res.json(mesas)
 
-res.json(lista)
-
-}catch(err){
-res.json({ok:false,error:err.toString()})
-}
-
+  } catch (error) {
+    res.json([])
+  }
 })
 
-app.post("/mesasConConsumo", async (req,res)=>{
-try{
+app.post("/mesasConConsumo", async (req, res) => {
+  try {
 
-const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
-const url = `https://opensheet.elk.sh/${sheetID}/Ventas`
+    const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
+    const url = `https://opensheet.elk.sh/${sheetID}/Ventas`
 
-const response = await fetch(url)
-const data = await response.json()
+    const response = await fetch(url)
+    const data = await response.json()
 
-let mesas = {}
+    let mesas = {}
 
-data.forEach(row=>{
-let mesa = (row.Mesa || row.mesa || "").trim()
-let total = Number(row.Total || row.total || 0)
+    data.forEach(row => {
+      let mesa = (row.Mesa || row.mesa || "").toString().trim()
+      let total = Number((row.Total || row.total || 0).toString().trim()) || 0
 
-if(mesa && total > 0){
-mesas[mesa] = true
-}
+      if (mesa && total > 0) {
+        mesas[mesa] = true
+      }
+    })
+
+    res.json(mesas)
+
+  } catch (error) {
+    res.json({})
+  }
 })
 
-res.json(mesas)
+app.post("/totalesPorMesa", async (req, res) => {
+  try {
 
-}catch(err){
-res.json({ok:false,error:err.toString()})
-}
-})
+    const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
+    const url = `https://opensheet.elk.sh/${sheetID}/Ventas`
 
-app.post("/totalesPorMesa", async (req,res)=>{
+    const response = await fetch(url)
+    const data = await response.json()
 
-try{
+    let totales = {}
 
-const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
-const url = `https://opensheet.elk.sh/${sheetID}/Ventas`
+    data.forEach(row => {
 
-const response = await fetch(url)
-const data = await response.json()
+      let mesa = (row.Mesa || row.mesa || "").toString().trim()
+      let total = Number((row.Total || row.total || 0).toString().trim()) || 0
 
-let totales = {}
+      if (!mesa) return
 
-data.forEach(row=>{
-let mesa = (row.Mesa || row.mesa || "").trim()
-let total = Number(row.Total || row.total || 0)
+      if (!totales[mesa]) {
+        totales[mesa] = 0
+      }
 
-if(!totales[mesa]) totales[mesa] = 0
-totales[mesa] += total
-})
+      totales[mesa] += total
+    })
 
-res.json(totales)
+    res.json(totales)
 
-}catch(err){
-res.json({ok:false,error:err.toString()})
-}
-
+  } catch (error) {
+    res.json({})
+  }
 })
 
 // ==========================
