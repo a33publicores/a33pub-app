@@ -1855,16 +1855,27 @@ function cargarGraficos(){
 
 let inicio = document.getElementById("fechaInicio").value
 let fin = document.getElementById("fechaFin").value
-let producto = document.getElementById("filtroProducto").value
+let producto = document.getElementById("filtroProducto").value || "Todos"
 
-api("datosGraficos",{inicio,fin,producto}).then(function(data){
+api("datosGraficos",{inicio,fin,producto})
+.then(function(data){
+
+console.log("GRAFICOS:", data)
+
+/* 🔥 PROTECCIÓN */
+if(!data || !data.productos){
+console.warn("Sin datos de gráficos")
+return
+}
 
 crearGrafico("graficoProductos", data.productos || {})
 crearGrafico("graficoMesas", data.mesas || {})
 crearGrafico("graficoFechas", data.fechas || {})
 
 })
-
+.catch(err=>{
+console.error("ERROR GRAFICOS:", err)
+})
 }
 
 /* 👉 PEGA AQUÍ 👇 */
@@ -2045,6 +2056,11 @@ document.getElementById("totalDeuda").innerText =
 }
 
 function crearGrafico(id,datos){
+
+if(!datos || Object.keys(datos).length === 0){
+console.warn("Grafico vacío:", id)
+return
+}  
 
 let etiquetas=Object.keys(datos)
 let valores=Object.values(datos)
@@ -2259,14 +2275,22 @@ api("obtenerProductos").then(function(data){
 
 let select = document.getElementById("filtroProducto")
 
+/* 🔥 LIMPIAR SIEMPRE */
+select.innerHTML = '<option value="Todos">Todos</option>'
+
 (data || []).forEach(p=>{
 
-let opt = document.createElement("option")
+let nombre = (p.nombre || "").trim()
 
-opt.value = p.nombre
-opt.text = p.nombre
+if(nombre){
+
+let opt = document.createElement("option")
+opt.value = nombre
+opt.text = nombre
 
 select.appendChild(opt)
+
+}
 
 })
 
