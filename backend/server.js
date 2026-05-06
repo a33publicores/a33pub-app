@@ -815,30 +815,56 @@ error:e.toString()
 
 })
 
-api("obtenerCuentaMesa",{mesa:cuenta}).then(function(data){
+app.post("/obtenerCuentaMesa", async (req,res)=>{
 
-let html=""
-let totalGeneral = 0
+try{
 
-data.forEach(function(i){
+const {mesa} = req.body
 
-totalGeneral += Number(i.total || 0)
+const response = await fetch(
+`https://opensheet.elk.sh/1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc/Ventas`
+)
 
-html += `
-<tr>
-<td>${i.producto}</td>
-<td>${i.cantidad}</td>
-<td>$${Number(i.total || 0).toLocaleString()}</td>
-<td></td>
-</tr>
-`
+const data = await response.json()
+
+let cuenta = []
+
+data.forEach(row=>{
+
+const mesaVenta = String(row.Mesa || "").trim()
+
+if(mesaVenta === mesa){
+
+cuenta.push({
+
+producto: row.Nombre || "",
+cantidad: Number(row.Cantidad || 0),
+
+precio: Number(
+String(row.Precio || 0)
+.replace(/[^0-9]/g,"")
+) || 0,
+
+total: Number(
+String(row.Total || 0)
+.replace(/[^0-9]/g,"")
+) || 0
 
 })
 
-document.getElementById("detalle").innerHTML = html
+}
 
-document.getElementById("total").innerText =
-"TOTAL $" + totalGeneral.toLocaleString()
+})
+
+res.json(cuenta)
+
+}catch(error){
+
+console.log("ERROR CUENTA:", error)
+
+res.json([])
+
+}
 
 })
 
