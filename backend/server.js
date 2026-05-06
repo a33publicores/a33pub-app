@@ -818,50 +818,69 @@ error:e.toString()
 // ==========================
 // OBTENER CUENTA MESA
 // ==========================
-app.post("/obtenerCuentaMesa", async(req,res)=>{
+// ==========================
+// OBTENER CUENTA MESA
+// ==========================
+app.post("/obtenerCuentaMesa", async (req,res)=>{
 
 try{
 
-const mesa = req.body.mesa
+const { mesa } = req.body
 
-const response = await sheets.spreadsheets.values.get({
-spreadsheetId,
-range:"Ventas!A:H"
-})
+const response = await fetch(
+"https://opensheet.elk.sh/1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc/Ventas"
+)
 
-const rows = response.data.values || []
+const data = await response.json()
 
-if(rows.length <= 1){
+if(!Array.isArray(data)){
 return res.json([])
 }
 
-const datos = rows.slice(1)
+const cuenta = data
+.filter(row => {
 
-const cuenta = datos
-.filter(r => (r[1] || "").trim() === mesa.trim())
-.filter(r => (r[6] || "").trim().toUpperCase() !== "PAGADO")
-.map(r => ({
+const mesaRow = String(
+row.Mesa || row.mesa || ""
+).trim()
 
-fecha: r[0] || "",
-mesa: r[1] || "",
-nombre: r[2] || "",
-precio: Number(String(r[3] || 0).replace(/[$,]/g,"")),
-cantidad: Number(r[4] || 0),
-total: Number(String(r[5] || 0).replace(/[$,]/g,"")),
-estado: r[6] || ""
+const estado = String(
+row.Estado || row.estado || ""
+).trim().toUpperCase()
+
+return (
+mesaRow === mesa &&
+estado !== "PAGADO"
+)
+
+})
+.map(row => ({
+
+nombre: String(
+row.Nombre || row.nombre || ""
+).trim(),
+
+precio: Number(
+String(row.Precio || 0)
+.replace(/[^0-9]/g,"")
+) || 0,
+
+cantidad: Number(row.Cantidad || 0),
+
+total: Number(
+String(row.Total || row.total || 0)
+.replace(/[^0-9]/g,"")
+) || 0
 
 }))
 
 res.json(cuenta)
 
-}catch(err){
+}catch(error){
 
-console.log("ERROR OBTENER CUENTA:", err)
+console.log("ERROR CUENTA:", error)
 
-res.status(500).json({
-error:true,
-message:err.message
-})
+res.json([])
 
 }
 
