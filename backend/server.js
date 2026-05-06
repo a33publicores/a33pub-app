@@ -563,35 +563,67 @@ try{
 
 const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
 
-const url = `https://opensheet.elk.sh/${sheetID}/Mesas`
+/* 🔥 TRAER MESAS */
+const urlMesas =
+`https://opensheet.elk.sh/${sheetID}/Mesas`
 
-const response = await fetch(url)
-const data = await response.json()
+/* 🔥 TRAER VENTAS */
+const urlVentas =
+`https://opensheet.elk.sh/${sheetID}/Ventas`
 
-/* 🔥 MESAS DEL SHEET */
-let listaSheet = []
+const [mesasRes, ventasRes] = await Promise.all([
+fetch(urlMesas),
+fetch(urlVentas)
+])
 
-if(Array.isArray(data)){
+const mesasData = await mesasRes.json()
+const ventasData = await ventasRes.json()
 
-listaSheet = data.map(m=>
-String(m.Nombre || "").trim()
-).filter(Boolean)
+/* 🔥 ARMAR LISTA */
+let lista = []
+
+mesasData.forEach(m=>{
+
+let nombre = String(m.Nombre || "").trim()
+
+if(!nombre) return
+
+/* 🔥 CALCULAR TOTAL */
+let total = 0
+
+ventasData.forEach(v=>{
+
+let mesaVenta = String(v.Mesa || "").trim()
+
+if(mesaVenta === nombre){
+
+let precio = Number(
+String(v.Precio || 0)
+.replace(/[^0-9]/g,"")
+) || 0
+
+let cantidad = Number(v.Cantidad || 0)
+
+total += precio * cantidad
 
 }
 
-/* 🔥 UNIR CON MESAS TEMPORALES */
-let todas = [...new Set([
-...listaSheet,
-...mesas
-])]
+})
 
-res.json(todas)
+lista.push({
+nombre,
+total
+})
+
+})
+
+res.json(lista)
 
 }catch(error){
 
-console.log("ERROR OBTENER MESAS:",error)
+console.log("ERROR OBTENER MESAS:", error)
 
-res.json(mesas)
+res.json([])
 
 }
 
