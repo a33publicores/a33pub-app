@@ -1441,20 +1441,33 @@ if(mesaSeleccionada==null) return
 
 let cuenta = mesas[mesaSeleccionada]
 
-tituloCuenta.innerText = "Cuenta - " + cuenta
+document.getElementById("tituloCuenta").innerText =
+"Cuenta - " + cuenta
 
-api("obtenerCuenta",{cuenta}).then(function(data){
+api("obtenerCuentaMesa",{mesa:cuenta})
+.then(function(data){
+
+console.log("CUENTA:", data)
 
 let html=""
+let totalGeneral = 0
 
-data.items.forEach(function(i){
+if(!Array.isArray(data)){
+data=[]
+}
 
-html+=`
+data.forEach(function(i){
+
+let subtotal = Number(i.total || 0)
+
+totalGeneral += subtotal
+
+html += `
 <tr>
-<td>${i.producto}</td>
+<td>${i.nombre || i.producto}</td>
 <td>${i.cantidad}</td>
-<td>$${Number(i.total || 0).toLocaleString()}</td>
-<td><button onclick="quitarProducto(${i.fila})">❌</button></td>
+<td>$${subtotal.toLocaleString()}</td>
+<td></td>
 </tr>
 `
 
@@ -1463,7 +1476,14 @@ html+=`
 document.getElementById("detalle").innerHTML = html
 
 document.getElementById("total").innerText =
-"TOTAL $" + Number(data.total || 0).toLocaleString()
+"TOTAL $" + totalGeneral.toLocaleString()
+
+})
+.catch(err=>{
+
+console.error(err)
+
+alert("Error cargando cuenta")
 
 })
 
