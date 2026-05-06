@@ -815,59 +815,6 @@ error:e.toString()
 
 })
 
-app.post("/obtenerCuentaMesa", async (req,res)=>{
-
-try{
-
-const {mesa} = req.body
-
-const response = await fetch(
-`https://opensheet.elk.sh/1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc/Ventas`
-)
-
-const data = await response.json()
-
-let cuenta = []
-
-data.forEach(row=>{
-
-const mesaVenta = String(row.Mesa || "").trim()
-
-if(mesaVenta === mesa){
-
-cuenta.push({
-
-producto: row.Nombre || "",
-cantidad: Number(row.Cantidad || 0),
-
-precio: Number(
-String(row.Precio || 0)
-.replace(/[^0-9]/g,"")
-) || 0,
-
-total: Number(
-String(row.Total || 0)
-.replace(/[^0-9]/g,"")
-) || 0
-
-})
-
-}
-
-})
-
-res.json(cuenta)
-
-}catch(error){
-
-console.log("ERROR CUENTA:", error)
-
-res.json([])
-
-}
-
-})
-
 const PORT = process.env.PORT || 3000
 
 app.listen(PORT, ()=>{
