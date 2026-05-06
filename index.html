@@ -1329,39 +1329,42 @@ api("obtenerMesas")
 
 console.log("MESAS:", data)
 
-const contenedor = document.getElementById("mesas")
+const contenedor = document.getElementById("mesasContainer")
 
-/* 🔥 LIMPIAR PARA NO DUPLICAR */
 contenedor.innerHTML = ""
 
 if(!Array.isArray(data)){
+console.warn("Mesas inválidas")
 return
 }
 
-/* 🔥 ELIMINAR DUPLICADOS */
-const unicas = [...new Set(data)]
+mesas = data.map(m => m.nombre)
 
-unicas.forEach(function(nombre){
+data.forEach(function(mesa){
 
-api("totalesPorMesa",{mesa:nombre})
-.then(function(totalMesa){
+let nombre = mesa.nombre || "Mesa"
+let total = Number(mesa.total || 0)
 
 contenedor.innerHTML += `
 
-<div class="mesaBox"
-onclick="seleccionarMesa('${nombre}')">
+<div class="mesa consumo"
+onclick="seleccionarMesaPorNombre('${nombre}')">
 
-<h3>${nombre}</h3>
+<div style="text-align:center;width:100%;">
 
-<p>
-$${Number(totalMesa.total || 0).toLocaleString()}
-</p>
+<div style="font-size:16px;font-weight:bold;">
+${nombre}
+</div>
+
+<div style="margin-top:6px;font-size:20px;font-weight:bold;">
+$${total.toLocaleString()}
+</div>
+
+</div>
 
 </div>
 
 `
-
-})
 
 })
 
