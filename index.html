@@ -1434,23 +1434,42 @@ document.getElementById("total").innerText =
 
 /* BUSCADOR PRODUCTOS */
 
-busqueda.addEventListener("keyup",function(){
+document.getElementById("busqueda").addEventListener("keyup",function(){
 
-let texto=this.value.toLowerCase()
+let texto = this.value.toLowerCase().trim()
 
-resultados.innerHTML=""
+resultados.innerHTML = ""
 
-if(texto=="") return
+if(!texto){
+return
+}
+
+if(!productos || productos.length === 0){
+
+resultados.innerHTML = `
+<div style="color:white;padding:10px;">
+No hay productos cargados
+</div>
+`
+
+return
+}
 
 productos.forEach(function(p,i){
 
-if(p.nombre.toLowerCase().includes(texto)){
+let nombre = String(p.nombre || "").toLowerCase()
 
-resultados.innerHTML+=`
+if(nombre.includes(texto)){
+
+resultados.innerHTML += `
 
 <div class="producto">
 
-<b>${p.nombre}</b> $${p.precio}
+<b>${p.nombre}</b>
+
+<div>
+💰 $${Number(p.precio || 0).toLocaleString()}
+</div>
 
 <div class="cantidadBox">
 
@@ -1620,10 +1639,29 @@ alert("✅ Pagado con "+metodoTexto)
 
 function cargarProductos(){
 
-api("obtenerProductos").then(function(data){
+api("obtenerProductos")
+.then(function(data){
 
-productos = data || []
+console.log("PRODUCTOS:", data)
 
+if(!Array.isArray(data)){
+console.warn("Productos inválidos")
+productos = []
+return
+}
+
+productos = data.filter(p =>
+p &&
+p.nombre &&
+String(p.nombre).trim() !== ""
+)
+
+console.log("PRODUCTOS CARGADOS:", productos)
+
+})
+.catch(err=>{
+console.error("ERROR PRODUCTOS:", err)
+productos = []
 })
 
 }
