@@ -495,64 +495,27 @@ let consumos = {}
 // ==========================
 // MESAS
 // ==========================
-app.post("/agregarMesa", async (req,res)=>{
+app.post("/agregarMesa", async(req,res)=>{
 
 try{
 
 const {nombre} = req.body
 
-if(!nombre){
-return res.json({ok:false})
-}
-
-const response = await fetch(
-`https://opensheet.elk.sh/1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc/Mesas`
-)
-
-const mesas = await response.json()
-
-const existe = mesas.some(m =>
-String(m.Nombre || "")
-.trim()
-.toLowerCase()
-===
-nombre.trim().toLowerCase()
-)
-
-if(existe){
-
-return res.json({
-ok:false,
-mensaje:"Mesa ya existe"
-})
-
-}
-
 await sheets.spreadsheets.values.append({
-
-spreadsheetId:
-"1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc",
-
-range:"Mesas!A:A",
-
+spreadsheetId:SHEET_ID,
+range:"MESAS!A:A",
 valueInputOption:"USER_ENTERED",
-
 requestBody:{
 values:[[nombre]]
 }
-
 })
 
 res.json({ok:true})
 
-}catch(error){
+}catch(err){
 
-console.log("ERROR AGREGAR MESA:", error)
-
-res.json({
-ok:false,
-error:error.toString()
-})
+console.log(err)
+res.status(500).json({error:String(err)})
 
 }
 
