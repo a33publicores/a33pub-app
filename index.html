@@ -2511,7 +2511,9 @@ if(!nombre) return
 api("crearMesa",{
 nombre
 })
-.then(()=>{
+.then((resp)=>{
+
+console.log("MESA CREADA:", resp)
 
 cargarMesas()
 
@@ -2519,6 +2521,7 @@ cargarMesas()
 .catch(err=>{
 
 console.error(err)
+
 alert("Error creando mesa")
 
 })
