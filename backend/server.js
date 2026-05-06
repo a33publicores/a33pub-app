@@ -3,7 +3,13 @@ const cors = require("cors")
 const app = express()
 const { google } = require("googleapis")
 
-const credenciales = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT)
+let credenciales = {}
+
+try{
+credenciales = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT || "{}")
+}catch(e){
+console.log("ERROR VARIABLE GOOGLE:", e)
+}
 
 const auth = new google.auth.GoogleAuth({
   credentials: {
