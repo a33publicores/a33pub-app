@@ -629,6 +629,66 @@ res.json([])
 
 })
 
+app.post("/crearMesa", async (req, res) => {
+
+try{
+
+const { nombre } = req.body
+
+if(!nombre){
+
+return res.json({
+ok:false,
+error:"Nombre requerido"
+})
+
+}
+
+const auth = new google.auth.GoogleAuth({
+credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT),
+scopes:["https://www.googleapis.com/auth/spreadsheets"]
+})
+
+const sheets = google.sheets({
+version:"v4",
+auth
+})
+
+const spreadsheetId = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
+
+await sheets.spreadsheets.values.append({
+
+spreadsheetId,
+
+range:"MESAS!A:A",
+
+valueInputOption:"USER_ENTERED",
+
+requestBody:{
+values:[
+[nombre]
+]
+}
+
+})
+
+res.json({
+ok:true
+})
+
+}catch(error){
+
+console.log("ERROR CREAR MESA:", error)
+
+res.json({
+ok:false,
+error:String(error)
+})
+
+}
+
+})
+
 app.post("/mesasConConsumo", async (req, res) => {
   try {
 
