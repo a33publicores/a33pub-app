@@ -868,7 +868,7 @@ String(row.Precio || 0)
 cantidad: Number(row.Cantidad || 0),
 
 total: Number(
-String(row.Total || row.total || 0)
+String(row.total || row.total || 0)
 .replace(/[^0-9]/g,"")
 ) || 0
 
