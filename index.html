@@ -1329,7 +1329,7 @@ api("obtenerMesas")
 
 console.log("MESAS:", data)
 
-const contenedor = document.getElementById("mesas")
+const contenedor = document.getElementById("mesasContainer")
 
 /* 🔥 LIMPIAR PARA NO DUPLICAR */
 contenedor.innerHTML = ""
@@ -1339,7 +1339,7 @@ return
 }
 
 /* 🔥 ELIMINAR DUPLICADOS */
-const unicas = [...new Set(data)]
+const unicas = mesas
 
 unicas.forEach(function(nombre){
 
@@ -1348,8 +1348,9 @@ api("totalesPorMesa",{mesa:nombre})
 
 contenedor.innerHTML += `
 
-<div class="mesaBox"
-onclick="seleccionarMesa('${nombre}')">
+<div class="mesa consumo"
+
+onclick="seleccionarMesaPorNombre('${nombre}')"
 
 <h3>${nombre}</h3>
 
@@ -1433,6 +1434,13 @@ mesaSeleccionada=index
 verCuenta()
 }
 
+function seleccionarMesaPorNombre(nombre){
+
+mesaSeleccionada = mesas.indexOf(nombre)
+
+verCuenta()
+
+}
 
 /* CUENTA */
 
@@ -1688,6 +1696,8 @@ console.warn("Productos inválidos")
 productos = []
 return
 }
+
+mesas = [...new Set(data)]
 
 productos = data.filter(p =>
 p &&
