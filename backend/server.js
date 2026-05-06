@@ -815,6 +815,74 @@ error:e.toString()
 
 })
 
+// ==========================
+// OBTENER CUENTA MESA
+// ==========================
+app.post("/obtenerCuentaMesa", async (req,res)=>{
+
+try{
+
+const { mesa } = req.body
+
+const response = await fetch(
+"https://opensheet.elk.sh/1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc/Ventas"
+)
+
+const data = await response.json()
+
+if(!Array.isArray(data)){
+return res.json([])
+}
+
+const cuenta = data
+.filter(row => {
+
+const mesaRow = String(
+row.Mesa || row.mesa || ""
+).trim()
+
+const estado = String(
+row.Estado || row.estado || ""
+).trim().toUpperCase()
+
+return (
+mesaRow === mesa &&
+estado !== "PAGADO"
+)
+
+})
+.map(row => ({
+
+nombre: String(
+row.Nombre || row.nombre || ""
+).trim(),
+
+precio: Number(
+String(row.Precio || 0)
+.replace(/[^0-9]/g,"")
+) || 0,
+
+cantidad: Number(row.Cantidad || 0),
+
+total: Number(
+String(row.Total || row.total || 0)
+.replace(/[^0-9]/g,"")
+) || 0
+
+}))
+
+res.json(cuenta)
+
+}catch(error){
+
+console.log("ERROR CUENTA:", error)
+
+res.json([])
+
+}
+
+})
+
 const PORT = process.env.PORT || 3000
 
 app.listen(PORT, ()=>{
