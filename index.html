@@ -1329,42 +1329,33 @@ api("obtenerMesas")
 
 console.log("MESAS:", data)
 
-const contenedor = document.getElementById("mesasContainer")
+const contenedor = document.getElementById("mesas")
 
-/* LIMPIAR */
+/* 🔥 LIMPIAR PARA NO DUPLICAR */
 contenedor.innerHTML = ""
 
-/* VALIDAR */
 if(!Array.isArray(data)){
-console.warn("Mesas inválidas")
 return
 }
 
-/* GUARDAR NOMBRES */
-mesas = data.map(m => m.nombre)
+/* 🔥 ELIMINAR DUPLICADOS */
+const unicas = [...new Set(data)]
 
-/* CREAR TARJETAS */
-data.forEach(function(mesa){
+unicas.forEach(function(nombre){
 
-let nombre = mesa.nombre || "Mesa"
-let total = Number(mesa.total || 0)
+api("totalesPorMesa",{mesa:nombre})
+.then(function(totalMesa){
 
 contenedor.innerHTML += `
 
-<div class="mesa consumo"
-onclick="seleccionarMesaPorNombre('${nombre}')">
+<div class="mesaBox"
+onclick="seleccionarMesa('${nombre}')">
 
-<div style="text-align:center;width:100%;">
+<h3>${nombre}</h3>
 
-<div style="font-size:16px;font-weight:bold;">
-${nombre}
-</div>
-
-<div style="margin-top:6px;font-size:20px;font-weight:bold;">
-$${total.toLocaleString()}
-</div>
-
-</div>
+<p>
+$${Number(totalMesa.total || 0).toLocaleString()}
+</p>
 
 </div>
 
@@ -1373,14 +1364,14 @@ $${total.toLocaleString()}
 })
 
 })
+
+})
 .catch(err=>{
 console.log("ERROR MESAS:", err)
 })
 
 }
-.catch(err=>{
-console.log("ERROR MESAS:", err)
-})
+
 
 function generarMesas(){
 
