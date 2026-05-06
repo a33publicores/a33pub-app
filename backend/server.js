@@ -3,6 +3,19 @@ const cors = require("cors")
 const app = express()
 const { google } = require("googleapis")
 
+const auth = new google.auth.GoogleAuth({
+  credentials: {
+    client_email: process.env.GOOGLE_CLIENT_EMAIL,
+    private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n')
+  },
+  scopes: ["https://www.googleapis.com/auth/spreadsheets"]
+})
+
+const sheets = google.sheets({
+  version: "v4",
+  auth
+})
+
 app.set("trust proxy", 1)
 
 /* 🔥 CORS PROFESIONAL (SOLUCIÓN REAL) */
@@ -495,43 +508,71 @@ let consumos = {}
 // ==========================
 // MESAS
 // ==========================
-app.post("/agregarMesa",(req,res)=>{
+app.post("/agregarMesa", async (req,res)=>{
 
 try{
 
 const nombre = String(req.body.nombre || "").trim()
 
 if(!nombre){
-return res.json({ok:false})
+return res.json({ok:false,error:"Mesa vacía"})
 }
 
-/* 🔥 EVITAR DUPLICADOS */
+const spreadsheetId = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
+
+/* LEER MESAS EXISTENTES */
+const lectura = await sheets.spreadsheets.values.get({
+spreadsheetId,
+range: "Mesas!A:A"
+})
+
+const filas = lectura.data.values || []
+const existe = filas.some(f=>
+String(f[0] || "").trim().toLowerCase() === nombre.toLowerCase()
+)
+
+if(existe){
+return res.json({
+ok:false,
+error:"La mesa ya existe"
+})
+}
+
+/* AGREGAR NUEVA MESA */
+await sheets.spreadsheets.values.append({
+spreadsheetId,
+range: "Mesas!A:A",
+valueInputOption: "USER_ENTERED",
+requestBody: {
+values: [[nombre]]
+}
+})
+
+/* MEMORIA LOCAL */
 if(!mesas.includes(nombre)){
 mesas.push(nombre)
 }
 
-/* 🔥 CREAR CONSUMO */
 if(!consumos[nombre]){
 consumos[nombre] = 0
 }
 
 res.json({
 ok:true,
-mesas
+nombre
 })
 
 }catch(e){
 
 console.log("ERROR AGREGAR MESA:",e)
-
 res.json({
-ok:false
+ok:false,
+error:e.toString()
 })
 
 }
 
 })
-
 app.post("/obtenerMesas", async (req, res) => {
 
 try{
