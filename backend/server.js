@@ -499,62 +499,59 @@ app.post("/agregarMesa", async (req,res)=>{
 
 try{
 
-const nombre = String(req.body.nombre || "").trim()
+const {nombre} = req.body
 
 if(!nombre){
-return res.json({ok:false,error:"Mesa vacía"})
+return res.json({ok:false})
 }
 
-const spreadsheetId = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
+const response = await fetch(
+`https://opensheet.elk.sh/1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc/Mesas`
+)
 
-/* LEER MESAS EXISTENTES */
-const lectura = await sheets.spreadsheets.values.get({
-spreadsheetId,
-range: "Mesas!A:A"
-})
+const mesas = await response.json()
 
-const filas = lectura.data.values || []
-const existe = filas.some(f=>
-String(f[0] || "").trim().toLowerCase() === nombre.toLowerCase()
+const existe = mesas.some(m =>
+String(m.Nombre || "")
+.trim()
+.toLowerCase()
+===
+nombre.trim().toLowerCase()
 )
 
 if(existe){
+
 return res.json({
 ok:false,
-error:"La mesa ya existe"
+mensaje:"Mesa ya existe"
 })
+
 }
 
-/* AGREGAR NUEVA MESA */
 await sheets.spreadsheets.values.append({
-spreadsheetId,
-range: "Mesas!A:A",
-valueInputOption: "USER_ENTERED",
-requestBody: {
-values: [[nombre]]
+
+spreadsheetId:
+"1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc",
+
+range:"Mesas!A:A",
+
+valueInputOption:"USER_ENTERED",
+
+requestBody:{
+values:[[nombre]]
 }
+
 })
 
-/* MEMORIA LOCAL */
-if(!mesas.includes(nombre)){
-mesas.push(nombre)
-}
+res.json({ok:true})
 
-if(!consumos[nombre]){
-consumos[nombre] = 0
-}
+}catch(error){
 
-res.json({
-ok:true,
-nombre
-})
+console.log("ERROR AGREGAR MESA:", error)
 
-}catch(e){
-
-console.log("ERROR AGREGAR MESA:",e)
 res.json({
 ok:false,
-error:e.toString()
+error:error.toString()
 })
 
 }
