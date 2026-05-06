@@ -904,6 +904,8 @@ Guardar Inversión
 
 <h2>Ventas</h2>
 
+
+
 <button class="btnMesa" onclick="crearMesa()">
 ➕ Agregar Mesa
 </button>
@@ -2496,6 +2498,29 @@ alert("Usuario o contraseña incorrectos")
 .catch(err=>{
 console.error(err)
 alert("Error conectando con el servidor")
+})
+
+}
+
+function crearMesa(){
+
+let nombre = prompt("Nombre de la mesa")
+
+if(!nombre) return
+
+api("crearMesa",{
+nombre
+})
+.then(()=>{
+
+cargarMesas()
+
+})
+.catch(err=>{
+
+console.error(err)
+alert("Error creando mesa")
+
 })
 
 }
