@@ -192,70 +192,49 @@ app.post("/obtenerProductos", async (req,res)=>{
 
 try{
 
-const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
+const response = await fetch(
+`https://opensheet.elk.sh/1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc/Inventario`
+)
 
-const urlInventario = `https://opensheet.elk.sh/${sheetID}/Inventario`
-const urlVentas = `https://opensheet.elk.sh/${sheetID}/Ventas`
+const inventario = await response.json()
 
-const [invRes, venRes] = await Promise.all([
-fetch(urlInventario),
-fetch(urlVentas)
-])
+console.log("INVENTARIO:", inventario)
 
-const inventario = await invRes.json()
-const ventas = await venRes.json()
-
-/* 🔥 MAPA DE VENTAS */
-let vendidos = {}
-
-ventas.forEach(row=>{
-
-let nombre = (row.Nombre || "").trim()
-let cantidad = Number(row.Cantidad || 0)
-
-if(!nombre) return
-
-if(!vendidos[nombre]){
-vendidos[nombre] = 0
+if(!Array.isArray(inventario)){
+return res.json([])
 }
 
-vendidos[nombre] += cantidad
+const productos = inventario.map(row=>({
 
-})
+nombre: String(row.nombre || "").trim(),
 
+precio: Number(
+String(row.precio || "0")
+.replace(/\$/g,"")
+.replace(/\./g,"")
+.replace(/,/g,"")
+.trim()
+) || 0,
 
-  
-/* 🔥 RESULTADO FINAL */
-let resultado = inventario.map(p=>{
+stock: Number(row.stock || 0),
 
-let nombre = (p.Producto || "").trim()
+vendido: Number(row.vendido || 0),
 
-let precio = Number(
-String(p.Precio || 0)
-.replace(/[^0-9]/g,"")
-) || 0
+restante: Number(row.restante || 0),
 
-let stock = Number(p.Cantidad || 0)
+codigo: String(row.codigo || "").trim()
 
-let vendido = vendidos[nombre] || 0
+}))
+.filter(p => p.nombre !== "")
 
-let restante = stock - vendido
+res.json(productos)
 
-return {
-nombre,
-precio,
-stock,
-vendido,
-restante
-}
+}catch(error){
 
-})
+console.log("ERROR PRODUCTOS:", error)
 
-res.json(resultado)
-
-}catch(e){
-console.log("ERROR INVENTARIO:", e)
 res.json([])
+
 }
 
 })
