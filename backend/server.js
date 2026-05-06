@@ -584,7 +584,7 @@ let lista = []
 
 mesasData.forEach(m=>{
 
-let nombre = String(m.nombre || "").trim()
+let nombre = String(m.Nombre || "").trim()
 
 if(!nombre) return
 
