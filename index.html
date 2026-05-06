@@ -1339,7 +1339,9 @@ return
 }
 
 /* 🔥 ELIMINAR DUPLICADOS */
-const unicas = mesas
+const unicas = [...new Set(data)]
+
+mesas = unicas
 
 unicas.forEach(function(nombre){
 
@@ -1349,8 +1351,7 @@ api("totalesPorMesa",{mesa:nombre})
 contenedor.innerHTML += `
 
 <div class="mesa consumo"
-
-onclick="seleccionarMesaPorNombre('${nombre}')"
+onclick="seleccionarMesaPorNombre('${nombre}')">
 
 <h3>${nombre}</h3>
 
@@ -1696,8 +1697,6 @@ console.warn("Productos inválidos")
 productos = []
 return
 }
-
-mesas = [...new Set(data)]
 
 productos = data.filter(p =>
 p &&
