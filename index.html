@@ -1076,35 +1076,6 @@ usuarios.style.display="none"
 
 }
 
-function login(usuario,clave){
-
-const hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Usuarios")
-const datos = hoja.getDataRange().getValues()
-
-for(let i=1;i<datos.length;i++){
-
-let user = String(datos[i][0]).trim().toLowerCase()
-let pass = String(datos[i][1]).trim()
-
-let inputUser = String(usuario).trim().toLowerCase()
-let inputPass = String(clave).trim()
-
-if(user === inputUser && pass === inputPass){
-
-return {
-ok:true,
-rol:datos[i][2],
-usuario:user
-}
-
-}
-
-}
-
-return {ok:false}
-
-}
-
 function configurarPermisos(){
 
 let botones = document.querySelectorAll(".sidebar button")
@@ -1662,7 +1633,7 @@ productos = data || []
 
 function cargarInventario(){
 
-api("obtenerInventarioCompleto").then(function(data){
+api("obtenerProductos").then(function(data){
 
 let html=""
 
@@ -1689,7 +1660,7 @@ ${Number(p.restante)||0}
 </td>
 
 <td>
-<button onclick="guardarInventario(${i},'${p.codigo}')">
+<button>
 Guardar
 </button>
 </td>
@@ -2455,33 +2426,6 @@ alert("Error conectando con el servidor")
 
 }
 
-function obtenerInventarioCompleto() {
-
-  const hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Inventario")
-  const datos = hoja.getDataRange().getValues()
-
-  const headers = datos[0]
-
-  return datos.slice(1).map((fila, i) => {
-
-    let obj = {}
-
-    headers.forEach((h, j) => {
-      obj[String(h).toLowerCase().trim()] = fila[j]
-    })
-
-    return {
-      nombre: obj.nombre || "",
-      precio: Number(obj.precio) || 0,
-      stock: Number(obj.stock) || 0,
-      vendido: Number(obj.vendido) || 0,
-      restante: Number(obj.restante) || 0,
-      codigo: obj.codigo || i
-    }
-
-  })
-
-}
 
 </script>
 
