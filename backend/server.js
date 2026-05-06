@@ -597,14 +597,12 @@ let mesaVenta = String(v.Mesa || "").trim()
 
 if(mesaVenta === nombre){
 
-let precio = Number(
-String(v.Precio || 0)
+let totalVenta = Number(
+String(v.total || v.Total || 0)
 .replace(/[^0-9]/g,"")
 ) || 0
 
-let cantidad = Number(v.Cantidad || 0)
-
-total += precio * cantidad
+total += totalVenta
 
 }
 
@@ -736,13 +734,10 @@ app.post("/totalesPorMesa", async (req, res) => {
     data.forEach(row => {
 
       let mesa = (row.Mesa || row.mesa || "").toString().trim()
-      let precio = Number(
-      String(row.Precio || 0).replace(/[^0-9]/g,"")
+      let total = Number(
+      String(row.total || row.Total || 0)
+      .replace(/[^0-9]/g,"")
       ) || 0
-
-      let cantidad = Number(row.Cantidad || 0)
-
-      let total = precio * cantidad
 
       if (!mesa) return
 
@@ -868,7 +863,7 @@ String(row.Precio || 0)
 cantidad: Number(row.Cantidad || 0),
 
 total: Number(
-String(row.total || row.total || 0)
+String(row.total || row.Total || 0)
 .replace(/[^0-9]/g,"")
 ) || 0
 
