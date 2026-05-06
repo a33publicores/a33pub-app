@@ -1324,11 +1324,50 @@ document.getElementById("tablaResumen").innerHTML = html
 
 function cargarMesas(){
 
-api("obtenerMesas").then(function(data){
+api("obtenerMesas")
+.then(function(data){
 
-mesas = data || []
-generarMesas()
+console.log("MESAS:", data)
 
+const contenedor = document.getElementById("mesas")
+
+/* 🔥 LIMPIAR PARA NO DUPLICAR */
+contenedor.innerHTML = ""
+
+if(!Array.isArray(data)){
+return
+}
+
+/* 🔥 ELIMINAR DUPLICADOS */
+const unicas = [...new Set(data)]
+
+unicas.forEach(function(nombre){
+
+api("totalesPorMesa",{mesa:nombre})
+.then(function(totalMesa){
+
+contenedor.innerHTML += `
+
+<div class="mesaBox"
+onclick="seleccionarMesa('${nombre}')">
+
+<h3>${nombre}</h3>
+
+<p>
+$${Number(totalMesa.total || 0).toLocaleString()}
+</p>
+
+</div>
+
+`
+
+})
+
+})
+
+})
+.catch(err=>{
+console.log("ERROR MESAS:", err)
 })
 
 }
