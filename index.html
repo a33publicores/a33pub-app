@@ -1331,7 +1331,24 @@ console.log("MESAS:", data)
 
 const contenedor = document.getElementById("mesasContainer")
 
-/* 🔥 LIMPIAR PARA NO DUPLICAR */
+/* LIMPIAR */
+contenedor.innerHTML = ""
+
+/* VALIDAR */
+if(!Array.isArray(data)){
+console.warn("Mesas inválidas")
+return
+}
+
+/* GUARDAR NOMBRES */
+mesas = data.map(m => m.nombre)
+
+/* CREAR TARJETAS */
+data.forEach(function(mesa){
+
+let nombre = mesa.nombre || "Mesa"
+let total = Number(mesa.total || 0)
+
 contenedor.innerHTML += `
 
 <div class="mesa consumo"
@@ -1344,7 +1361,7 @@ ${nombre}
 </div>
 
 <div style="margin-top:6px;font-size:20px;font-weight:bold;">
-$${Number(totalMesa.total || 0).toLocaleString()}
+$${total.toLocaleString()}
 </div>
 
 </div>
@@ -1353,6 +1370,11 @@ $${Number(totalMesa.total || 0).toLocaleString()}
 
 `
 
+})
+
+})
+.catch(err=>{
+console.log("ERROR MESAS:", err)
 })
 
 }
