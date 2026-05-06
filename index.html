@@ -1382,34 +1382,6 @@ console.log("ERROR MESAS:", err)
 console.log("ERROR MESAS:", err)
 })
 
-function crearMesa(){
-
-let nombre = prompt("Nombre de la mesa")
-
-if(!nombre){
-return
-}
-
-api("agregarMesa",{nombre})
-
-.then(function(res){
-
-console.log("MESA CREADA:", res)
-
-cargarMesas()
-
-})
-
-.catch(function(err){
-
-console.error("ERROR CREAR MESA:", err)
-
-alert("Error creando mesa")
-
-})
-
-}
-
 function generarMesas(){
 
 mesasContainer.innerHTML=""
