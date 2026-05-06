@@ -496,35 +496,79 @@ let consumos = {}
 // ==========================
 app.post("/agregarMesa",(req,res)=>{
 
-const {nombre} = req.body
+try{
+
+const nombre = String(req.body.nombre || "").trim()
 
 if(!nombre){
 return res.json({ok:false})
 }
 
+/* 🔥 EVITAR DUPLICADOS */
+if(!mesas.includes(nombre)){
 mesas.push(nombre)
-consumos[nombre] = 0
+}
 
-res.json({ok:true})
+/* 🔥 CREAR CONSUMO */
+if(!consumos[nombre]){
+consumos[nombre] = 0
+}
+
+res.json({
+ok:true,
+mesas
+})
+
+}catch(e){
+
+console.log("ERROR AGREGAR MESA:",e)
+
+res.json({
+ok:false
+})
+
+}
 
 })
 
 app.post("/obtenerMesas", async (req, res) => {
-  try {
 
-    const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
-    const url = `https://opensheet.elk.sh/${sheetID}/Mesas`
+try{
 
-    const response = await fetch(url)
-    const data = await response.json()
+const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
 
-    let lista = data.map(m => (m.Nombre || "").trim())
+const url = `https://opensheet.elk.sh/${sheetID}/Mesas`
 
-    res.json(lista)
+const response = await fetch(url)
+const data = await response.json()
 
-  } catch (error) {
-    res.json([])
-  }
+/* 🔥 MESAS DEL SHEET */
+let listaSheet = []
+
+if(Array.isArray(data)){
+
+listaSheet = data.map(m=>
+String(m.Nombre || "").trim()
+).filter(Boolean)
+
+}
+
+/* 🔥 UNIR CON MESAS TEMPORALES */
+let todas = [...new Set([
+...listaSheet,
+...mesas
+])]
+
+res.json(todas)
+
+}catch(error){
+
+console.log("ERROR OBTENER MESAS:",error)
+
+res.json(mesas)
+
+}
+
 })
 
 app.post("/mesasConConsumo", async (req, res) => {
