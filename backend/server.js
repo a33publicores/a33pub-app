@@ -695,6 +695,58 @@ app.post("/totalesPorMesa", async (req, res) => {
 // ==========================
 // PORT
 // ==========================
+app.post("/registrarVenta", async (req,res)=>{
+
+try{
+
+const {
+cuenta,
+nombre,
+precio,
+cantidad
+} = req.body
+
+const total = Number(precio) * Number(cantidad)
+
+const fecha = new Date().toLocaleDateString("es-CO")
+
+await sheets.spreadsheets.values.append({
+
+spreadsheetId:"1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc",
+
+range:"Ventas!A:G",
+
+valueInputOption:"USER_ENTERED",
+
+requestBody:{
+values:[[
+fecha,
+cuenta,
+nombre,
+precio,
+cantidad,
+total,
+"Pendiente"
+]]
+}
+
+})
+
+res.json({ok:true})
+
+}catch(e){
+
+console.log("ERROR REGISTRAR:",e)
+
+res.json({
+ok:false,
+error:e.toString()
+})
+
+}
+
+})
+
 const PORT = process.env.PORT || 3000
 
 app.listen(PORT, ()=>{
