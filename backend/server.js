@@ -593,7 +593,13 @@ let total = 0
 
 ventasData.forEach(v=>{
 
-let mesaVenta = String(v.Mesa || "").trim()
+let mesaVenta = String(
+v.Mesa ||
+v.mesa ||
+v.Cuenta ||
+v.cuenta ||
+""
+).trim()
 
 if(mesaVenta === nombre){
 
@@ -733,7 +739,13 @@ app.post("/totalesPorMesa", async (req, res) => {
 
     data.forEach(row => {
 
-      let mesa = (row.Mesa || row.mesa || "").toString().trim()
+      let mesa = (
+row.Mesa ||
+row.mesa ||
+row.Cuenta ||
+row.cuenta ||
+""
+).toString().trim()
       let total = Number(
       String(row.total || row.Total || 0)
       .replace(/[^0-9]/g,"")
@@ -836,7 +848,11 @@ const cuenta = data
 .filter(row => {
 
 const mesaRow = String(
-row.Mesa || row.mesa || ""
+row.Mesa ||
+row.mesa ||
+row.Cuenta ||
+row.cuenta ||
+""
 ).trim()
 
 const estado = String(
