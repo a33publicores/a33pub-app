@@ -1332,32 +1332,22 @@ console.log("MESAS:", data)
 const contenedor = document.getElementById("mesasContainer")
 
 /* 🔥 LIMPIAR PARA NO DUPLICAR */
-contenedor.innerHTML = ""
-
-if(!Array.isArray(data)){
-return
-}
-
-/* 🔥 ELIMINAR DUPLICADOS */
-const unicas = [...new Set(data)]
-
-mesas = unicas
-
-unicas.forEach(function(nombre){
-
-api("totalesPorMesa",{mesa:nombre})
-.then(function(totalMesa){
-
 contenedor.innerHTML += `
 
 <div class="mesa consumo"
 onclick="seleccionarMesaPorNombre('${nombre}')">
 
-<h3>${nombre}</h3>
+<div style="text-align:center;width:100%;">
 
-<p>
+<div style="font-size:16px;font-weight:bold;">
+${nombre}
+</div>
+
+<div style="margin-top:6px;font-size:20px;font-weight:bold;">
 $${Number(totalMesa.total || 0).toLocaleString()}
-</p>
+</div>
+
+</div>
 
 </div>
 
@@ -1380,10 +1370,17 @@ let nombre = prompt("Nombre de la mesa")
 
 if(!nombre) return
 
-api("agregarMesa",{nombre}).then(function(){
+api("agregarMesa",{nombre})
+.then(function(res){
+
+console.log("MESA CREADA:", res)
 
 cargarMesas()
 
+})
+.catch(err=>{
+console.error("ERROR CREAR MESA:", err)
+alert("Error creando mesa")
 })
 
 }
