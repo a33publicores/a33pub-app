@@ -1371,6 +1371,7 @@ let nombre = prompt("Nombre de la mesa")
 if(!nombre) return
 
 api("agregarMesa",{nombre})
+
 .then(function(res){
 
 console.log("MESA CREADA:", res)
@@ -1378,9 +1379,13 @@ console.log("MESA CREADA:", res)
 cargarMesas()
 
 })
+
 .catch(err=>{
+
 console.error("ERROR CREAR MESA:", err)
+
 alert("Error creando mesa")
+
 })
 
 }
