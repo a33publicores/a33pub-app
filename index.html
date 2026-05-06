@@ -1368,7 +1368,9 @@ function crearMesa(){
 
 let nombre = prompt("Nombre de la mesa")
 
-if(!nombre) return
+if(!nombre){
+return
+}
 
 api("agregarMesa",{nombre})
 
@@ -1380,7 +1382,7 @@ cargarMesas()
 
 })
 
-.catch(err=>{
+.catch(function(err){
 
 console.error("ERROR CREAR MESA:", err)
 
