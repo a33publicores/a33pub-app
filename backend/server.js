@@ -109,27 +109,38 @@ app.post("/dashboard", async (req, res) => {
       fetch(urlInventario)
     ])
 
-    const ventas = await ventasRes.json()
-    const inventario = await inventarioRes.json()
+    const inventario = await invRes.json()
+    const ventas = await venRes.json()
+
+    /* 🔥 VALIDAR ARRAY */
+    if(!Array.isArray(inventario)){
+    console.log("Inventario inválido:", inventario)
+    return res.json([])
+    }
 
     let totalDia = 0
     let productos = {}
 
     ventas.forEach(row => {
 
-      let prod = (row.Nombre || "").trim()
-      let total = Number((row.Total || row.total || 0).toString().trim()) || 0
+      let producto = (row.Nombre || "").trim()
 
-      if (!producto) return
+      let total = Number(
+      String(row.Total || row.total || 0)
+      .replace(/[^0-9]/g,"")
+      ) || 0
+
+      if(!producto) return
 
       totalDia += total
 
-      if (!productos[producto]) {
-        productos[producto] = 0
+      if(!productos[producto]){
+      productos[producto] = 0
       }
 
       productos[producto] += total
-    })
+
+      })
 
     let productoTop = "-"
 
@@ -190,19 +201,30 @@ vendidos[nombre] += cantidad
 
 })
 
+
+  
 /* 🔥 RESULTADO FINAL */
 let resultado = inventario.map(p=>{
 
-let nombre = (p.Producto || p.Nombre || "").trim()
-let stock = Number(p.Cantidad || p.Stock || 0)
+let nombre = (p.Producto || "").trim()
+
+let precio = Number(
+String(p.Precio || 0)
+.replace(/[^0-9]/g,"")
+) || 0
+
+let stock = Number(p.Cantidad || 0)
 
 let vendido = vendidos[nombre] || 0
 
+let restante = stock - vendido
+
 return {
 nombre,
+precio,
 stock,
 vendido,
-restante: stock - vendido
+restante
 }
 
 })
@@ -230,7 +252,13 @@ let resumen = {}
 
 data.forEach(row=>{
 let mesa = (row.Mesa || row.mesa || "").trim()
-let total = Number(row.Total || 0)
+let precio = Number(
+String(row.Precio || 0).replace(/[^0-9]/g,"")
+) || 0
+
+let cantidad = Number(row.Cantidad || 0)
+
+let total = precio * cantidad
 
 if(!resumen[mesa]) resumen[mesa] = 0
 resumen[mesa] += total
@@ -512,7 +540,13 @@ app.post("/mesasConConsumo", async (req, res) => {
 
     data.forEach(row => {
       let mesa = (row.Mesa || row.mesa || "").toString().trim()
-      let total = Number((row.Total || row.total || 0).toString().trim()) || 0
+      let precio = Number(
+      String(row.Precio || 0).replace(/[^0-9]/g,"")
+      ) || 0
+
+      let cantidad = Number(row.Cantidad || 0)
+
+      let total = precio * cantidad
 
       if (mesa && total > 0) {
         mesas[mesa] = true
@@ -540,7 +574,13 @@ app.post("/totalesPorMesa", async (req, res) => {
     data.forEach(row => {
 
       let mesa = (row.Mesa || row.mesa || "").toString().trim()
-      let total = Number((row.Total || row.total || 0).toString().trim()) || 0
+      let precio = Number(
+      String(row.Precio || 0).replace(/[^0-9]/g,"")
+      ) || 0
+
+      let cantidad = Number(row.Cantidad || 0)
+
+      let total = precio * cantidad
 
       if (!mesa) return
 
