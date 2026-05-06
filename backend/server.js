@@ -512,7 +512,7 @@ const response = await fetch(
 const mesas = await response.json()
 
 const existe = mesas.some(m =>
-String(m.Nombre || "")
+String(m.nombre || "")
 .trim()
 .toLowerCase()
 ===
@@ -584,7 +584,7 @@ let lista = []
 
 mesasData.forEach(m=>{
 
-let nombre = String(m.Nombre || "").trim()
+let nombre = String(m.nombre || "").trim()
 
 if(!nombre) return
 
@@ -645,7 +645,7 @@ error:"Nombre requerido"
 }
 
 const auth = new google.auth.GoogleAuth({
-credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT),
+credentials: credenciales,
 scopes:["https://www.googleapis.com/auth/spreadsheets"]
 })
 
