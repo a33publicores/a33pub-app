@@ -537,13 +537,20 @@ font-size:14px;
 }
 
 .cardForm{
-background:white;
+
+width:500px;
+margin:auto;
+background:#f2f2f2;
 padding:20px;
-border-radius:10px;
-display:flex;
-flex-direction:column;
-gap:10px;
-max-width:400px;
+border-radius:15px;
+
+}
+
+#gastos h2{
+
+text-align:center;
+margin-bottom:20px;
+
 }
 
 .cardForm input{
@@ -562,22 +569,38 @@ cursor:pointer;
 }
 
 .tablaPro{
-width:100%;
-background:white;
-color:black;
-border-radius:10px;
-overflow:hidden;
+
+width:90%;
+margin:auto;
+border-collapse:collapse;
+margin-top:20px;
+table-layout:auto;
+
+}
+
+.tablaPro th,
+.tablaPro td{
+
+border:2px solid #ffffff;
+padding:12px;
+text-align:center;
+white-space:nowrap;
+
 }
 
 .tablaPro th{
+
 background:#34495e;
 color:white;
-padding:8px;
+font-size:22px;
+
 }
 
 .tablaPro td{
-padding:8px;
-border-bottom:1px solid #eee;
+
+background:white;
+color:black;
+
 }
 
 .contenidoInterno{
@@ -737,6 +760,7 @@ Producto más vendido
 <div>
 <label>Producto</label>
 <select id="filtroProducto">
+<option value="Todos">Todos</option>
 </select>
 </div>
 
@@ -791,9 +815,7 @@ Ventas por Método de Pago
 
 </div>
 
-
 <div id="inversion" style="display:none">
-
 
 <h2>Inversión</h2>
 
@@ -907,8 +929,6 @@ Guardar Inversión
 
 <h2>Ventas</h2>
 
-
-
 <button class="btnMesa" onclick="crearMesa()">
 ➕ Agregar Mesa
 </button>
@@ -959,42 +979,39 @@ Guardar Inversión
 
 </div>
 
-<div id="gastos" style="
-display:none;
-padding:20px;
-max-width:1000px;
-margin:auto;
-">
+<div id="gastos" style="display:none">
 
 <h2>Gastos / Compras</h2>
 
-<div class="cardForm" style="
-max-width:500px;
-margin:auto;
-width:100%;
-">
+<div class="cardForm">
 
-<select id="gastoProducto"></select>
+<select id="gastoProducto"
+onchange="actualizarDatosGasto()">
+</select>
 
 <input
 type="number"
 id="gastoCantidad"
 placeholder="Cantidad"
+readonly
 >
 
 <input
 type="number"
 id="gastoValor"
-placeholder="Valor Unitario"
+placeholder="Valor"
+readonly
 >
 
 <input
 type="file"
 id="gastoSoporte"
-accept="image/*,.pdf"
 >
 
-<button class="btnGuardar" onclick="guardarGasto()">
+<button
+class="btnGuardar"
+onclick="guardarGasto()"
+>
 Guardar Gasto
 </button>
 
@@ -1010,7 +1027,6 @@ Guardar Gasto
 <th>Cantidad</th>
 <th>Valor</th>
 <th>Total</th>
-<th>Soporte</th>
 </tr>
 </thead>
 
@@ -1019,7 +1035,6 @@ Guardar Gasto
 </table>
 
 </div>
-
 
 <div class="cuentaPanel">
 
@@ -1092,26 +1107,39 @@ let graficoFecha=null
 let graficoSemanas=null
 let graficoMetodos=null
 
-const URL = "https://a33pub-app-production.up.railway.app" // 👈 pega tu URL real
+const URL = "https://script.google.com/macros/s/AKfycbxprCdAVErPOxaU09fuf5a4zARe6GQJTdbhBbkWdllcKTUaAGSks9nUElfj8tLp5ZsB/exec"
 
 function api(accion, data = {}){
 
-return fetch(URL + "/" + accion, {
-method: "POST",
-headers: {
-"Content-Type": "application/json"
-},
-body: JSON.stringify(data)
-})
-.then(res => {
-if(!res.ok) throw new Error("Error HTTP")
-return res.json()
-})
-.catch(err => {
-console.error("API ERROR:", err)
-throw "Error conectando con el servidor"
-})
+return new Promise((resolve, reject)=>{
 
+const callbackName = "cb_" + Date.now()
+
+window[callbackName] = function(res){
+resolve(res)
+delete window[callbackName]
+script.remove()
+}
+
+let params = new URLSearchParams()
+
+params.append("accion", accion)
+params.append("callback", callbackName)
+
+for(let key in data){
+params.append(key, data[key])
+}
+
+let script = document.createElement("script")
+script.src = URL + "?" + params.toString()
+
+script.onerror = function(){
+reject("Error cargando script")
+}
+
+document.body.appendChild(script)
+
+})
 }
 
 function cerrarSesion(){
@@ -1135,10 +1163,40 @@ dashboard.style.display="none"
 ventas.style.display="none"
 inventario.style.display="none"
 inversion.style.display="none"
+gastos.style.display="none"
 
 if(typeof usuarios !== "undefined"){
 usuarios.style.display="none"
 }
+
+}
+
+function login(usuario,clave){
+
+const hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Usuarios")
+const datos = hoja.getDataRange().getValues()
+
+for(let i=1;i<datos.length;i++){
+
+let user = String(datos[i][0]).trim().toLowerCase()
+let pass = String(datos[i][1]).trim()
+
+let inputUser = String(usuario).trim().toLowerCase()
+let inputPass = String(clave).trim()
+
+if(user === inputUser && pass === inputPass){
+
+return {
+ok:true,
+rol:datos[i][2],
+usuario:user
+}
+
+}
+
+}
+
+return {ok:false}
 
 }
 
@@ -1195,14 +1253,14 @@ api("obtenerResumenMesas").then(function(data){
 
 let total=0
 
-Object.values(data).forEach(v=>{
-total += Number(v) || 0
+data.forEach(m=>{
+total += Number(m.total) || 0
 })
 
 document.getElementById("dineroMesas").innerText =
 "$"+total.toLocaleString()
 
-})
+}).obtenerResumenMesas()
 
 }
 
@@ -1240,7 +1298,7 @@ document.getElementById("ventasHoy").innerText =
 document.getElementById("productoTop").innerText =
 data.productoTop || "-"
 
-})
+}).resumenDashboard()
 
 
 
@@ -1390,58 +1448,28 @@ document.getElementById("tablaResumen").innerHTML = html
 
 function cargarMesas(){
 
-api("obtenerMesas")
-.then(function(data){
+api("obtenerMesas").then(function(data){
 
-console.log("MESAS:", data)
+mesas = data || []
+generarMesas()
 
-const contenedor = document.getElementById("mesasContainer")
-
-contenedor.innerHTML = ""
-
-if(!Array.isArray(data)){
-console.warn("Mesas inválidas")
-return
-}
-
-mesas = data
-
-data.forEach(function(mesa){
-
-let nombre = mesa.nombre || "Mesa"
-let total = Number(mesa.total || 0)
-
-contenedor.innerHTML += `
-
-<div class="mesa consumo"
-onclick="seleccionarMesaPorNombre('${nombre}')">
-
-<div style="text-align:center;width:100%;">
-
-<div style="font-size:16px;font-weight:bold;">
-${nombre}
-</div>
-
-<div class="mesaTotal"
-style="margin-top:6px;font-size:20px;font-weight:bold;">
-$${total.toLocaleString()}
-</div>
-
-</div>
-
-</div>
-
-`
-
-})
-
-})
-.catch(err=>{
-console.log("ERROR MESAS:", err)
 })
 
 }
 
+function crearMesa(){
+
+let nombre = prompt("Nombre de la mesa")
+
+if(!nombre) return
+
+api("agregarMesa",{nombre}).then(function(){
+
+cargarMesas()
+
+})
+
+}
 
 function generarMesas(){
 
@@ -1490,15 +1518,6 @@ mesaSeleccionada=index
 verCuenta()
 }
 
-function seleccionarMesaPorNombre(nombre){
-
-mesaSeleccionada = mesas.findIndex(
-m => m.nombre === nombre
-)
-
-verCuenta()
-
-}
 
 /* CUENTA */
 
@@ -1506,51 +1525,22 @@ function verCuenta(){
 
 if(mesaSeleccionada==null) return
 
-let cuenta = mesas[mesaSeleccionada].nombre
+let cuenta = mesas[mesaSeleccionada]
 
-document.getElementById("tituloCuenta").innerText =
-"Cuenta - " + cuenta
+tituloCuenta.innerText = "Cuenta - " + cuenta
 
-api("obtenerCuentaMesa",{mesa:cuenta})
-.then(function(data){
-
-console.log("CUENTA:", data)
+api("obtenerCuenta",{cuenta}).then(function(data){
 
 let html=""
-let totalGeneral = 0
 
-if(
-window.totalesMesas &&
-window.totalesMesas[cuenta]
-){
+data.items.forEach(function(i){
 
-totalGeneral = window.totalesMesas[cuenta]
-
-}
-
-if(!Array.isArray(data)){
-data=[]
-}
-
-data.forEach(function(i){
-
-let subtotal = Number(i.total || 0)
-
-if(
-!(
-window.totalesMesas &&
-window.totalesMesas[cuenta]
-)
-){
-totalGeneral += subtotal
-}
-
-html += `
+html+=`
 <tr>
-<td>${i.nombre || i.producto}</td>
+<td>${i.producto}</td>
 <td>${i.cantidad}</td>
-<td>$${subtotal.toLocaleString()}</td>
-<td></td>
+<td>$${Number(i.total || 0).toLocaleString()}</td>
+<td><button onclick="quitarProducto(${i.fila})">❌</button></td>
 </tr>
 `
 
@@ -1559,14 +1549,7 @@ html += `
 document.getElementById("detalle").innerHTML = html
 
 document.getElementById("total").innerText =
-"TOTAL $" + totalGeneral.toLocaleString()
-
-})
-.catch(err=>{
-
-console.error(err)
-
-alert("Error cargando cuenta")
+"TOTAL $" + Number(data.total || 0).toLocaleString()
 
 })
 
@@ -1575,42 +1558,23 @@ alert("Error cargando cuenta")
 
 /* BUSCADOR PRODUCTOS */
 
-document.getElementById("busqueda").addEventListener("keyup",function(){
+busqueda.addEventListener("keyup",function(){
 
-let texto = this.value.toLowerCase().trim()
+let texto=this.value.toLowerCase()
 
-resultados.innerHTML = ""
+resultados.innerHTML=""
 
-if(!texto){
-return
-}
-
-if(!productos || productos.length === 0){
-
-resultados.innerHTML = `
-<div style="color:white;padding:10px;">
-No hay productos cargados
-</div>
-`
-
-return
-}
+if(texto=="") return
 
 productos.forEach(function(p,i){
 
-let nombre = String(p.nombre || "").toLowerCase()
+if(p.nombre.toLowerCase().includes(texto)){
 
-if(nombre.includes(texto)){
-
-resultados.innerHTML += `
+resultados.innerHTML+=`
 
 <div class="producto">
 
-<b>${p.nombre}</b>
-
-<div>
-💰 $${Number(p.precio || 0).toLocaleString()}
-</div>
+<b>${p.nombre}</b> $${p.precio}
 
 <div class="cantidadBox">
 
@@ -1667,7 +1631,7 @@ animarVuelo(tarjeta)
 }
 
 /* OBTENER CUENTA */
-let cuenta = mesas[mesaSeleccionada].nombre
+let cuenta = mesas[mesaSeleccionada]
 
 let cantidad = Number(document.getElementById("cant_"+id).value)
 
@@ -1687,7 +1651,7 @@ let htmlFila = `
 <tr>
 <td>${nombre}</td>
 <td>${cantidad}</td>
-<td>$${subtotal.toLocaleString("es-CO")}</td>
+<td>$${subtotal}</td>
 <td></td>
 </tr>
 `
@@ -1695,61 +1659,13 @@ let htmlFila = `
 detalle.innerHTML += htmlFila
 
 /* CALCULAR TOTAL */
-/* CALCULAR TOTAL */
-
-let textoTotal = document
-.getElementById("total")
-.innerText
-.replace("TOTAL $","")
-.replace(/\./g,"")
-.replace(/,/g,"")
-.replace(/\$/g,"")
-.trim()
-
-let totalActual = Number(textoTotal) || 0
+let textoTotal = total.innerText.replace("TOTAL $","").replace(/,/g,"")
+let totalActual = Number(textoTotal || 0)
 
 totalActual += subtotal
 
 /* MOSTRAR TOTAL */
-document.getElementById("total").innerText =
-"TOTAL $" + totalActual.toLocaleString("es-CO")
-
-/* ACTUALIZAR TOTAL VISUAL DE LA MESA */
-
-/* ACTUALIZAR TOTAL LOCAL DE LA MESA */
-
-if(!window.totalesMesas){
-window.totalesMesas = {}
-}
-
-window.totalesMesas[cuenta] = totalActual
-mesas[mesaSeleccionada].total = totalActual
-
-/* ACTUALIZAR TARJETA */
-
-const tarjetas = document.querySelectorAll(".mesa")
-
-tarjetas.forEach(card=>{
-
-let nombreMesa = card
-.querySelector("div div")
-.innerText
-.trim()
-
-if(nombreMesa === cuenta){
-
-let divTotal = card.querySelector(".mesaTotal")
-
-if(divTotal){
-
-divTotal.innerText =
-"$" + totalActual.toLocaleString("es-CO")
-
-}
-
-}
-
-})
+total.innerText = "TOTAL $" + totalActual.toLocaleString()
 
 /* ANIMAR TOTAL */
 total.classList.add("animarTotal")
@@ -1758,37 +1674,16 @@ setTimeout(()=>{
 total.classList.remove("animarTotal")
 },400)
 
-/* 🔥 GUARDAR EN BACKEND */
+/* 🔥 GUARDAR EN BACKEND (FETCH) */
 api("registrarVenta",{
 cuenta,
 nombre,
 precio,
 cantidad
 })
-.then(()=>{
 
-/* NO RECARGAR MESAS */
-/* SOLO ACTUALIZAR BARRA SUPERIOR */
-
-let dineroActual = document
-.getElementById("dineroMesas")
-.innerText
-.replace("$","")
-.replace(/\./g,"")
-.replace(/,/g,"")
-.trim()
-
-dineroActual = Number(dineroActual) || 0
-
-dineroActual += subtotal
-
-document.getElementById("dineroMesas").innerText =
-"$" + dineroActual.toLocaleString("es-CO")
-
-})
-.catch(err=>{
-console.error(err)
-})
+/* ACTUALIZAR MESAS */
+generarMesas()
 
 }
 
@@ -1802,7 +1697,7 @@ alert("Selecciona una mesa")
 return
 }
 
-let cuenta = mesas[mesaSeleccionada].nombre
+let cuenta = mesas[mesaSeleccionada]
 
 /* 💳 SELECCIONAR METODO DE PAGO */
 let metodo = prompt(
@@ -1829,22 +1724,14 @@ if(!confirm("¿Confirmar pago con "+metodoTexto+"?")) return
 api("cerrarMesa",{cuenta,metodo:metodoTexto})
 .then(function(){
 
-/* ELIMINAR MESA DEL ARRAY */
-mesas.splice(mesaSeleccionada,1)
-
-/* LIMPIAR SELECCIÓN */
 mesaSeleccionada=null
 
-/* REGENERAR MESAS */
-generarMesas()
+cargarMesas()
 
 /* LIMPIAR PANEL */
 tituloCuenta.innerText="Cuenta"
 detalle.innerHTML=""
 total.innerText="TOTAL $0"
-
-/* RECARGAR TOP BAR */
-cargarTopBar()
 
 alert("✅ Pagado con "+metodoTexto)
 
@@ -1857,29 +1744,10 @@ alert("✅ Pagado con "+metodoTexto)
 
 function cargarProductos(){
 
-api("obtenerProductos")
-.then(function(data){
+api("obtenerProductos").then(function(data){
 
-console.log("PRODUCTOS:", data)
+productos = data || []
 
-if(!Array.isArray(data)){
-console.warn("Productos inválidos")
-productos = []
-return
-}
-
-productos = data.filter(p =>
-p &&
-p.nombre &&
-String(p.nombre).trim() !== ""
-)
-
-console.log("PRODUCTOS CARGADOS:", productos)
-
-})
-.catch(err=>{
-console.error("ERROR PRODUCTOS:", err)
-productos = []
 })
 
 }
@@ -1889,7 +1757,7 @@ productos = []
 
 function cargarInventario(){
 
-api("obtenerProductos").then(function(data){
+api("obtenerInventarioCompleto").then(function(data){
 
 let html=""
 
@@ -1912,11 +1780,11 @@ html+=`
 <td>${Number(p.vendido)||0}</td>
 
 <td style="font-weight:bold;color:#27ae60">
-${Number(p.stock || 0) - Number(p.vendido || 0)}
+${Number(p.restante)||0}
 </td>
 
 <td>
-<button>
+<button onclick="guardarInventario(${i},'${p.codigo}')">
 Guardar
 </button>
 </td>
@@ -2078,76 +1946,20 @@ cargarSelectInversiones()
 
 /* GRAFICOS */
 
-function agruparPorDiaSemana(fechas){
-
-const dias = {
-"Domingo":0,
-"Lunes":0,
-"Martes":0,
-"Miércoles":0,
-"Jueves":0,
-"Viernes":0,
-"Sábado":0
-}
-
-Object.keys(fechas).forEach(fecha=>{
-
-try{
-
-const partes = fecha.split("/")
-const f = new Date(`${partes[2]}-${partes[1]}-${partes[0]}`)
-
-const dia = f.toLocaleDateString("es-CO",{weekday:"long"})
-const nombreDia = dia.charAt(0).toUpperCase() + dia.slice(1)
-
-if(dias[nombreDia] !== undefined){
-dias[nombreDia]+= Number(fechas[fecha]) || 0
-}
-
-}catch(e){
-console.warn("Fecha mala:", fecha)
-}
-
-})
-
-return dias
-}
-
 function cargarGraficos(){
 
 let inicio = document.getElementById("fechaInicio").value
 let fin = document.getElementById("fechaFin").value
-let producto = document.getElementById("filtroProducto").value || "Todos"
+let producto = document.getElementById("filtroProducto").value
 
-api("datosGraficos",{inicio,fin,producto})
-.then(function(data){
+api("datosGraficos",{inicio,fin,producto}).then(function(data){
 
-console.log("GRAFICOS:", data)
-
-/* 🔥 VALIDACIÓN FUERTE */
-if(!data){
-console.warn("No hay data")
-return
-}
-
-/* PRODUCTOS */
-crearGrafico("graficoProductos", data.productos || {})
-
-/* 🔥 AGRUPAR POR DÍA */
-const datosPorDia = agruparPorDiaSemana(data.fechas || {})
-
-console.log("POR DIA:", datosPorDia)
-
-/* 🔥 USAR CANVAS CORRECTO */
-crearGrafico("graficoMesas", datosPorDia)
-
-/* FECHAS NORMAL */
-crearGrafico("graficoFechas", data.fechas || {})
+crearGrafico("graficoProductos", data.productos || [])
+crearGrafico("graficoMesas", data.mesas || [])
+crearGrafico("graficoFechas", data.fechas || [])
 
 })
-.catch(err=>{
-console.error("ERROR GRAFICOS:", err)
-})
+
 }
 
 /* 👉 PEGA AQUÍ 👇 */
@@ -2167,18 +1979,12 @@ dashboard.style.display="none"
 ventas.style.display="none"
 inventario.style.display="none"
 inversion.style.display="none"
-gastos.style.display="none"
 
 if(typeof usuarios !== "undefined"){
 usuarios.style.display="none"
 }
 
 /* MOSTRAR */
-
-if(vista=="gastos"){
-gastos.style.display="block"
-cargarProductosGastos()
-}
 
 if(vista=="dashboard"){
 dashboard.style.display="block"
@@ -2193,6 +1999,11 @@ cargarMesas()
 if(vista=="inventario"){
 inventario.style.display="block"
 cargarInventario()
+}
+
+if(vista=="gastos"){
+gastos.style.display="block"
+cargarProductosGastos()
 }
 
 if(vista=="inversion"){
@@ -2334,11 +2145,6 @@ document.getElementById("totalDeuda").innerText =
 }
 
 function crearGrafico(id,datos){
-
-if(!datos || Object.keys(datos).length === 0){
-console.warn("Grafico vacío:", id)
-return
-}  
 
 let etiquetas=Object.keys(datos)
 let valores=Object.values(datos)
@@ -2553,22 +2359,17 @@ api("obtenerProductos").then(function(data){
 
 let select = document.getElementById("filtroProducto")
 
-/* 🔥 LIMPIAR SIEMPRE */
-select.innerHTML = '<option value="Todos">Todos</option>'
+/* 🔥 LIMPIAR PARA NO DUPLICAR */
+select.innerHTML = `<option value="Todos">Todos</option>`
 
 (data || []).forEach(p=>{
 
-let nombre = (p.nombre || "").trim()
-
-if(nombre){
-
 let opt = document.createElement("option")
-opt.value = nombre
-opt.text = nombre
+
+opt.value = p.nombre
+opt.text = p.nombre
 
 select.appendChild(opt)
-
-}
 
 })
 
@@ -2660,7 +2461,7 @@ usuarioActual = res
 document.getElementById("loginScreen").style.display="none"
 
 // 🔥 AQUÍ ES EL CAMBIO IMPORTANTE
-Promise.resolve().then(()=>{
+api("inicializarSistema").then(()=>{
 
 cargarProductos()
 cargarMesas()
@@ -2688,141 +2489,102 @@ alert("Error conectando con el servidor")
 
 }
 
-function crearMesa(){
-
-let nombre = prompt("Nombre de la mesa")
-
-if(!nombre) return
-
-api("crearMesa",{
-nombre
-})
-.then((resp)=>{
-
-console.log("MESA CREADA:", resp)
-
-cargarMesas()
-
-})
-.catch(err=>{
-
-console.error(err)
-
-alert("Error creando mesa")
-
-})
-
-}
+let PRODUCTOS_GASTOS = []
 
 function cargarProductosGastos(){
+
+api("obtenerProductosDeposito")
+.then(function(data){
+
+PRODUCTOS_GASTOS = data || []
 
 let select =
 document.getElementById("gastoProducto")
 
-select.innerHTML=""
+select.innerHTML = ""
 
-productos.forEach(p=>{
+PRODUCTOS_GASTOS.forEach(function(p){
 
 select.innerHTML += `
-<option value="${p.nombre}">
-${p.nombre}
+<option value="${p.producto}">
+${p.producto}
 </option>
 `
 
 })
 
+if(PRODUCTOS_GASTOS.length > 0){
+actualizarDatosGasto()
 }
 
-function guardarGasto(){
+})
+
+}
+
+function actualizarDatosGasto(){
 
 let producto =
 document.getElementById("gastoProducto").value
 
-let cantidad =
-Number(document.getElementById("gastoCantidad").value)
+let encontrado =
+PRODUCTOS_GASTOS.find(
+p => p.producto === producto
+)
 
-let valor =
-Number(document.getElementById("gastoValor").value)
+if(!encontrado) return
 
-let soporte =
-document.getElementById("gastoSoporte").files[0]
+document.getElementById("gastoCantidad").value =
+encontrado.cantidad
 
-if(!producto || !cantidad || !valor){
-
-alert("Completa datos")
-return
+document.getElementById("gastoValor").value =
+encontrado.valor
 
 }
+
+function guardarGasto(){
+
+const producto =
+document.getElementById("gastoProducto").value
+
+const cantidad =
+Number(document.getElementById("gastoCantidad").value)
+
+const valor =
+Number(document.getElementById("gastoValor").value)
+
+const soporte =
+document.getElementById("gastoSoporte").files[0]
 
 const formData = new FormData()
 
-formData.append(
-"producto",
-producto
-)
+formData.append("producto", producto)
+formData.append("cantidad", cantidad)
+formData.append("valor", valor)
 
-formData.append(
-"cantidad",
-cantidad
-)
-
-formData.append(
-"valor",
-valor
-)
-
-/* SOPORTE */
 if(soporte){
-
-formData.append(
-"soporte",
-soporte
-)
-
+formData.append("soporte", soporte)
 }
 
-/* ENVIAR */
-fetch(
-"https://a33pub-app-production.up.railway.app/registrarGasto",
-{
+fetch("https://a33pub-app-production.up.railway.app/registrarGasto",{
 method:"POST",
 body:formData
-}
-)
-
+})
 .then(r=>r.json())
+.then(resp=>{
 
-.then(data=>{
+if(resp.ok){
 
-console.log("RESPUESTA GASTO:", data)
+alert("Gasto guardado")
 
-/* ERROR */
-if(!data.ok){
-
-alert(data.error || "Error guardando gasto")
-return
-
-}
-
-/* OK */
-alert("✅ Gasto guardado")
-
-/* LIMPIAR */
-document.getElementById("gastoCantidad").value=""
-document.getElementById("gastoValor").value=""
 document.getElementById("gastoSoporte").value=""
 
-/* RECARGAR */
 cargarInventario()
-cargarProductos()
 
-})
+}else{
 
-.catch(err=>{
+alert("Error")
 
-console.log(err)
-
-alert("Error servidor")
+}
 
 })
 
@@ -2832,3 +2594,4 @@ alert("Error servidor")
 
 </body>
 </html>
+
