@@ -241,6 +241,40 @@ codigo: String(row.codigo || "").trim()
 }))
 .filter(p => p.nombre !== "")
 
+const depositoResponse = await fetch(
+`https://opensheet.elk.sh/${SPREADSHEET_ID}/DEPOSITO`
+)
+
+const deposito = await depositoResponse.json()
+
+productos.forEach(p=>{
+
+const dep = deposito.find(d =>
+
+String(d.producto || "")
+.trim()
+.toUpperCase()
+===
+
+p.nombre.trim().toUpperCase()
+
+)
+
+if(dep){
+
+p.cantidadDeposito =
+Number(dep.cantidad || 0)
+
+p.valorDeposito =
+Number(
+String(dep.valor || 0)
+.replace(/[^0-9]/g,"")
+) || 0
+
+}
+
+})
+  
 res.json(productos)
 
 }catch(error){
