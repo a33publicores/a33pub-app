@@ -1709,14 +1709,22 @@ if(!confirm("¿Confirmar pago con "+metodoTexto+"?")) return
 api("cerrarMesa",{cuenta,metodo:metodoTexto})
 .then(function(){
 
+/* ELIMINAR MESA DEL ARRAY */
+mesas.splice(mesaSeleccionada,1)
+
+/* LIMPIAR SELECCIÓN */
 mesaSeleccionada=null
 
-cargarMesas()
+/* REGENERAR MESAS */
+generarMesas()
 
 /* LIMPIAR PANEL */
 tituloCuenta.innerText="Cuenta"
 detalle.innerHTML=""
 total.innerText="TOTAL $0"
+
+/* RECARGAR TOP BAR */
+cargarTopBar()
 
 alert("✅ Pagado con "+metodoTexto)
 
@@ -2585,3 +2593,4 @@ alert("Error creando mesa")
 
 </body>
 </html>
+
