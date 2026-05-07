@@ -1358,7 +1358,8 @@ onclick="seleccionarMesaPorNombre('${nombre}')">
 ${nombre}
 </div>
 
-<div style="margin-top:6px;font-size:20px;font-weight:bold;">
+<div class="mesaTotal"
+style="margin-top:6px;font-size:20px;font-weight:bold;">
 $${total.toLocaleString()}
 </div>
 
@@ -1619,6 +1620,24 @@ totalActual += subtotal
 
 /* MOSTRAR TOTAL */
 total.innerText = "TOTAL $" + totalActual.toLocaleString()
+
+/* ACTUALIZAR TOTAL VISUAL DE LA MESA */
+
+const tarjetas = document.querySelectorAll(".mesa")
+
+if(tarjetas[mesaSeleccionada]){
+
+let divTotal = tarjetas[mesaSeleccionada]
+.querySelector(".mesaTotal")
+
+if(divTotal){
+
+divTotal.innerText =
+"$" + totalActual.toLocaleString()
+
+}
+
+}
 
 /* ANIMAR TOTAL */
 total.classList.add("animarTotal")
