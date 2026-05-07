@@ -88,8 +88,6 @@ rol: String(fila[2] || "vendedor").trim()
 // ==========================
 // LOGIN
 // ==========================
-app.post("/login", (req,res)=>{
-
 app.post("/login", async(req,res)=>{
 
 try{
@@ -117,7 +115,7 @@ rol:encontrado.rol
 
 }
 
-res.json({
+return res.json({
 ok:false
 })
 
@@ -125,7 +123,7 @@ ok:false
 
 console.log("ERROR LOGIN:", error)
 
-res.json({
+return res.json({
 ok:false
 })
 
