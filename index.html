@@ -974,20 +974,24 @@ margin:auto;
 width:100%;
 ">
 
-<select id="gastoProducto"
-onchange="actualizarDatosGasto()">
+<select
+id="gastoProducto"
+onchange="actualizarDatosGasto()"
+>
+</select>
 
 <input
 type="number"
 id="gastoCantidad"
 placeholder="Cantidad"
+readonly
 >
 
 <input
 type="number"
 id="gastoValor"
-readonly
 placeholder="Valor Unitario"
+readonly
 >
 
 <input
@@ -996,7 +1000,10 @@ id="gastoSoporte"
 accept="image/*,.pdf"
 >
 
-<button class="btnGuardar" onclick="guardarGasto()">
+<button
+class="btnGuardar"
+onclick="guardarGasto()"
+>
 Guardar Gasto
 </button>
 
