@@ -1031,6 +1031,63 @@ metodo || "Efectivo"
 
 })
 
+/* ==========================
+ELIMINAR MESA DE SHEET MESAS
+========================== */
+
+const mesasResponse = await sheets.spreadsheets.values.get({
+
+spreadsheetId:
+"1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc",
+
+range:"Mesas!A:A"
+
+})
+
+const mesasRows = mesasResponse.data.values || []
+
+let filaMesa = -1
+
+mesasRows.forEach((row,index)=>{
+
+const nombreMesa = String(row[0] || "")
+.trim()
+
+if(
+nombreMesa.toLowerCase() ===
+cuenta.toLowerCase()
+){
+filaMesa = index + 1
+}
+
+})
+
+if(filaMesa > 1){
+
+await sheets.spreadsheets.batchUpdate({
+
+spreadsheetId:
+"1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc",
+
+requestBody:{
+requests:[{
+deleteDimension:{
+range:{
+sheetId:0,
+dimension:"ROWS",
+startIndex:filaMesa-1,
+endIndex:filaMesa
+}
+}
+}]
+}
+
+})
+
+}
+
+
+
 }
 
 res.json({
