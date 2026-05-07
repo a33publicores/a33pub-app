@@ -2745,7 +2745,7 @@ let valor =
 Number(document.getElementById("gastoValor").value)
 
 let soporte =
-document.getElementById("gastoSoporte").value
+document.getElementById("gastoSoporte").files[0]
 
 if(!producto || !cantidad || !valor){
 
@@ -2771,10 +2771,9 @@ formData.append(
 valor
 )
 
-formData.append(
-"soporte",
-document.getElementById("gastoSoporte").files[0]
-)
+if(soporte){
+formData.append("soporte", soporte)
+}
 
 fetch("https://a33pub-app-production.up.railway.app/registrarGasto",{
 
