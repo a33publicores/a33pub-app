@@ -1453,6 +1453,15 @@ console.log("CUENTA:", data)
 let html=""
 let totalGeneral = 0
 
+if(
+window.totalesMesas &&
+window.totalesMesas[cuenta]
+){
+
+totalGeneral = window.totalesMesas[cuenta]
+
+}
+
 if(!Array.isArray(data)){
 data=[]
 }
@@ -1461,7 +1470,14 @@ data.forEach(function(i){
 
 let subtotal = Number(i.total || 0)
 
+if(
+!(
+window.totalesMesas &&
+window.totalesMesas[cuenta]
+)
+){
 totalGeneral += subtotal
+}
 
 html += `
 <tr>
@@ -1633,6 +1649,16 @@ document.getElementById("total").innerText =
 "TOTAL $" + totalActual.toLocaleString("es-CO")
 
 /* ACTUALIZAR TOTAL VISUAL DE LA MESA */
+
+/* ACTUALIZAR TOTAL LOCAL DE LA MESA */
+
+if(!window.totalesMesas){
+window.totalesMesas = {}
+}
+
+window.totalesMesas[cuenta] = totalActual
+
+/* ACTUALIZAR TARJETA */
 
 const tarjetas = document.querySelectorAll(".mesa")
 
