@@ -1428,7 +1428,9 @@ verCuenta()
 
 function seleccionarMesaPorNombre(nombre){
 
-mesaSeleccionada = mesas.indexOf(nombre)
+mesaSeleccionada = mesas.findIndex(
+m => m.nombre === nombre
+)
 
 verCuenta()
 
@@ -1657,6 +1659,7 @@ window.totalesMesas = {}
 }
 
 window.totalesMesas[cuenta] = totalActual
+mesas[mesaSeleccionada].total = totalActual
 
 /* ACTUALIZAR TARJETA */
 
