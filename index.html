@@ -2542,7 +2542,7 @@ if(soporte){
 formData.append("soporte", soporte)
 }
 
-fetch("https://a33pub-app-production.up.railway.app/registrarGasto",{
+fetch(URL + "/registrarGasto",{
 method:"POST",
 body:formData
 })
