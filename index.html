@@ -2771,34 +2771,58 @@ formData.append(
 valor
 )
 
+/* SOPORTE */
 if(soporte){
-formData.append("soporte", soporte)
+
+formData.append(
+"soporte",
+soporte
+)
+
 }
 
-fetch("https://a33pub-app-production.up.railway.app/registrarGasto",{
-
+/* ENVIAR */
+fetch(
+"https://a33pub-app-production.up.railway.app/registrarGasto",
+{
 method:"POST",
 body:formData
+}
+)
 
-})
 .then(r=>r.json())
+
 .then(data=>{
 
+console.log("RESPUESTA GASTO:", data)
+
+/* ERROR */
+if(!data.ok){
+
+alert(data.error || "Error guardando gasto")
+return
+
+}
+
+/* OK */
 alert("✅ Gasto guardado")
 
+/* LIMPIAR */
 document.getElementById("gastoCantidad").value=""
 document.getElementById("gastoValor").value=""
 document.getElementById("gastoSoporte").value=""
 
+/* RECARGAR */
 cargarInventario()
 cargarProductos()
 
 })
+
 .catch(err=>{
 
 console.log(err)
 
-alert("Error guardando")
+alert("Error servidor")
 
 })
 
