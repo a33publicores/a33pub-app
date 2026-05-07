@@ -1700,7 +1700,23 @@ cantidad
 })
 .then(()=>{
 
-cargarTopBar()
+/* NO RECARGAR MESAS */
+/* SOLO ACTUALIZAR BARRA SUPERIOR */
+
+let dineroActual = document
+.getElementById("dineroMesas")
+.innerText
+.replace("$","")
+.replace(/\./g,"")
+.replace(/,/g,"")
+.trim()
+
+dineroActual = Number(dineroActual) || 0
+
+dineroActual += subtotal
+
+document.getElementById("dineroMesas").innerText =
+"$" + dineroActual.toLocaleString("es-CO")
 
 })
 .catch(err=>{
