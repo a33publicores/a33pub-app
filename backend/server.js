@@ -19,8 +19,10 @@ const auth = new google.auth.GoogleAuth({
     client_email: credenciales.client_email,
     private_key: credenciales.private_key
   },
-  scopes: ["https://www.googleapis.com/auth/spreadsheets"]
-})
+  scopes: [
+"https://www.googleapis.com/auth/spreadsheets",
+"https://www.googleapis.com/auth/drive"
+]
 
 const sheets = google.sheets({
   version: "v4",
