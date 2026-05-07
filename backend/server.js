@@ -681,11 +681,6 @@ version:"v4",
 auth
 })
 
-  const drive = google.drive({
-version:"v3",
-auth
-})
-
 const spreadsheetId = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
 
 await sheets.spreadsheets.values.append({
