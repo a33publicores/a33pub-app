@@ -1260,34 +1260,6 @@ usuarios.style.display="none"
 
 }
 
-function login(usuario,clave){
-
-const hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Usuarios")
-const datos = hoja.getDataRange().getValues()
-
-for(let i=1;i<datos.length;i++){
-
-let user = String(datos[i][0]).trim().toLowerCase()
-let pass = String(datos[i][1]).trim()
-
-let inputUser = String(usuario).trim().toLowerCase()
-let inputPass = String(clave).trim()
-
-if(user === inputUser && pass === inputPass){
-
-return {
-ok:true,
-rol:datos[i][2],
-usuario:user
-}
-
-}
-
-}
-
-return {ok:false}
-
-}
 
 function configurarPermisos(){
 
@@ -2681,7 +2653,19 @@ alert("Error")
 
 </script>
 
+<script>
 
+document
+.getElementById("btnMenuMovil")
+.addEventListener("click",()=>{
+
+document
+.querySelector(".sidebar")
+.classList.toggle("active")
+
+})
+
+</script>
 
 </body>
 </html>
