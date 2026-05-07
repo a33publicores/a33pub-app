@@ -1636,7 +1636,16 @@ cantidad
 })
 
 /* ACTUALIZAR MESAS */
-generarMesas()
+/* ACTUALIZAR MESAS */
+setTimeout(()=>{
+cargarMesas()
+},500)
+
+if(mesaSeleccionada != null){
+setTimeout(()=>{
+verCuenta()
+},500)
+}
 
 }
 
