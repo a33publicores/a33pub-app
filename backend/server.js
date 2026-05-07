@@ -1394,6 +1394,41 @@ error:String(error)
 
 })
 
+app.post("/obtenerProductosDeposito", async(req,res)=>{
+
+try{
+
+const response = await fetch(
+`https://opensheet.elk.sh/${SPREADSHEET_ID}/DEPOSITO`
+)
+
+const data = await response.json()
+
+const productos = data.map(row=>({
+
+producto: String(row.producto || "").trim(),
+
+cantidad: Number(row.cantidad || 0),
+
+valor: Number(
+String(row.valor || 0)
+.replace(/[$,.]/g,"")
+)
+
+}))
+
+res.json(productos)
+
+}catch(error){
+
+console.log(error)
+
+res.json([])
+
+}
+
+})
+
 app.listen(PORT, ()=>{
 console.log("Servidor corriendo en " + PORT)
 })
