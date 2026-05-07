@@ -601,7 +601,16 @@ v.cuenta ||
 ""
 ).trim()
 
-if(mesaVenta === nombre){
+const estado = String(
+v.Estado ||
+v.estado ||
+""
+).trim().toUpperCase()
+
+if(
+mesaVenta === nombre &&
+estado !== "PAGADO"
+){
 
 let totalVenta = Number(
 String(v.total || v.Total || 0)
