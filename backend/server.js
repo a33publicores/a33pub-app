@@ -1349,8 +1349,54 @@ if(filaProducto!=-1){
 const stockActual =
 Number(filas[filaProducto-1][2] || 0)
 
+/* =========================
+BUSCAR MULTIPLICADOR EN DEPOSITO
+========================= */
+
+let multiplicador = 1
+
+try{
+
+const deposito =
+await sheets.spreadsheets.values.get({
+
+spreadsheetId:SPREADSHEET_ID,
+range:"DEPOSITO!A:C"
+
+})
+
+const datosDeposito =
+deposito.data.values || []
+
+for(let x=1; x<datosDeposito.length; x++){
+
+const productoDeposito =
+String(datosDeposito[x][0] || "")
+.trim()
+.toUpperCase()
+
+if(
+productoDeposito ===
+String(producto).trim().toUpperCase()
+){
+
+multiplicador =
+Number(datosDeposito[x][1] || 1)
+
+break
+
+}
+
+}
+
+}catch(e){
+
+console.log("ERROR DEPOSITO:", e)
+
+}
+
 const nuevoStock =
-stockActual + cantidad
+stockActual + (cantidad * multiplicador)
 
 const vendido =
 Number(filas[filaProducto-1][3] || 0)
@@ -1389,41 +1435,6 @@ console.log("ERROR GASTO:",error)
 res.status(500).json({
 error:String(error)
 })
-
-}
-
-})
-
-app.post("/obtenerProductosDeposito", async(req,res)=>{
-
-try{
-
-const response = await fetch(
-`https://opensheet.elk.sh/${SPREADSHEET_ID}/DEPOSITO`
-)
-
-const data = await response.json()
-
-const productos = data.map(row=>({
-
-producto: String(row.producto || "").trim(),
-
-cantidad: Number(row.cantidad || 0),
-
-valor: Number(
-String(row.valor || 0)
-.replace(/[$,.]/g,"")
-)
-
-}))
-
-res.json(productos)
-
-}catch(error){
-
-console.log(error)
-
-res.json([])
 
 }
 
