@@ -1605,7 +1605,7 @@ let htmlFila = `
 <tr>
 <td>${nombre}</td>
 <td>${cantidad}</td>
-<td>$${subtotal}</td>
+<td>$${subtotal.toLocaleString("es-CO")}</td>
 <td></td>
 </tr>
 `
@@ -1613,13 +1613,24 @@ let htmlFila = `
 detalle.innerHTML += htmlFila
 
 /* CALCULAR TOTAL */
-let textoTotal = total.innerText.replace("TOTAL $","").replace(/,/g,"")
-let totalActual = Number(textoTotal || 0)
+/* CALCULAR TOTAL */
+
+let textoTotal = document
+.getElementById("total")
+.innerText
+.replace("TOTAL $","")
+.replace(/\./g,"")
+.replace(/,/g,"")
+.replace(/\$/g,"")
+.trim()
+
+let totalActual = Number(textoTotal) || 0
 
 totalActual += subtotal
 
 /* MOSTRAR TOTAL */
-total.innerText = "TOTAL $" + totalActual.toLocaleString()
+document.getElementById("total").innerText =
+"TOTAL $" + totalActual.toLocaleString("es-CO")
 
 /* ACTUALIZAR TOTAL VISUAL DE LA MESA */
 
@@ -1639,7 +1650,7 @@ let divTotal = card.querySelector(".mesaTotal")
 if(divTotal){
 
 divTotal.innerText =
-"$" + totalActual.toLocaleString()
+"$" + totalActual.toLocaleString("es-CO")
 
 }
 
@@ -2593,4 +2604,3 @@ alert("Error creando mesa")
 
 </body>
 </html>
-
