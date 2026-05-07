@@ -1030,7 +1030,7 @@ metodo || "Efectivo"
 }
 
 })
-
+}
 /* ==========================
 ELIMINAR MESA DE SHEET MESAS
 ========================== */
@@ -1083,10 +1083,6 @@ endIndex:filaMesa
 }
 
 })
-
-}
-
-
 
 }
 
