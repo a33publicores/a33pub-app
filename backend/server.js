@@ -856,7 +856,9 @@ row.cuenta ||
 ).trim()
 
 const estado = String(
-row.Estado || row.estado || ""
+row.Estado ||
+row.estado ||
+""
 ).trim().toUpperCase()
 
 return (
@@ -865,25 +867,56 @@ estado !== "PAGADO"
 )
 
 })
-.map(row => ({
+.map(row => {
 
-nombre: String(
-row.Nombre || row.nombre || ""
-).trim(),
-
-precio: Number(
-String(row.Precio || 0)
-.replace(/[^0-9]/g,"")
-) || 0,
-
-cantidad: Number(row.Cantidad || 0),
-
-total: Number(
-String(row.total || row.Total || 0)
+const precio = Number(
+String(
+row.Precio ||
+row.precio ||
+0
+)
 .replace(/[^0-9]/g,"")
 ) || 0
 
-}))
+const cantidad = Number(
+row.Cantidad ||
+row.cantidad ||
+0
+)
+
+const totalSheet = Number(
+String(
+row.total ||
+row.Total ||
+0
+)
+.replace(/[^0-9]/g,"")
+) || 0
+
+const total =
+totalSheet > 0
+? totalSheet
+: precio * cantidad
+
+return {
+
+nombre: String(
+row.Nombre ||
+row.nombre ||
+""
+).trim(),
+
+precio,
+
+cantidad,
+
+total
+
+}
+
+})
+
+console.log("CUENTA:", cuenta)
 
 res.json(cuenta)
 
