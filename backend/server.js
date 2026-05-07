@@ -207,20 +207,44 @@ app.post("/obtenerProductos", async (req,res)=>{
 try{
 
 const response = await fetch(
-`https://opensheet.elk.sh/1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc/Inventario`
+`https://opensheet.elk.sh/${SPREADSHEET_ID}/Inventario`
 )
 
 const inventario = await response.json()
-
-console.log("INVENTARIO:", inventario)
 
 if(!Array.isArray(inventario)){
 return res.json([])
 }
 
-const productos = inventario.map(row=>({
+/* 🔥 TRAER DEPOSITO */
+const depositoResponse = await fetch(
+`https://opensheet.elk.sh/${SPREADSHEET_ID}/DEPOSITO`
+)
 
-nombre: String(row.nombre || "").trim(),
+const deposito = await depositoResponse.json()
+
+const productos = inventario.map(row=>{
+
+let nombre = String(
+row.nombre || ""
+).trim()
+
+/* 🔥 BUSCAR EN DEPOSITO */
+let dep = deposito.find(d =>
+
+String(d.producto || "")
+.trim()
+.toUpperCase()
+
+===
+
+nombre.toUpperCase()
+
+)
+
+return {
+
+nombre,
 
 precio: Number(
 String(row.precio || "0")
@@ -236,45 +260,26 @@ vendido: Number(row.vendido || 0),
 
 restante: Number(row.restante || 0),
 
-codigo: String(row.codigo || "").trim()
+codigo: String(row.codigo || "").trim(),
 
-}))
-.filter(p => p.nombre !== "")
+cantidadDeposito:
+dep
+? Number(dep.cantidad || 0)
+: 0,
 
-const depositoResponse = await fetch(
-`https://opensheet.elk.sh/${SPREADSHEET_ID}/DEPOSITO`
-)
-
-const deposito = await depositoResponse.json()
-
-productos.forEach(p=>{
-
-const dep = deposito.find(d =>
-
-String(d.producto || "")
-.trim()
-.toUpperCase()
-===
-
-p.nombre.trim().toUpperCase()
-
-)
-
-if(dep){
-
-p.cantidadDeposito =
-Number(dep.cantidad || 0)
-
-p.valorDeposito =
-Number(
+valorDeposito:
+dep
+? Number(
 String(dep.valor || 0)
 .replace(/[^0-9]/g,"")
-) || 0
+)
+: 0
 
 }
 
 })
-  
+.filter(p => p.nombre !== "")
+
 res.json(productos)
 
 }catch(error){
