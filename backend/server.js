@@ -817,6 +817,58 @@ total,
 
 })
 
+// 🔥 ACTUALIZAR INVENTARIO
+
+const inventario = await sheets.spreadsheets.values.get({
+spreadsheetId,
+range:"Inventario!A2:F"
+})
+
+let filasInv = inventario.data.values || []
+
+for(let i=0;i<filasInv.length;i++){
+
+let fila = filasInv[i]
+
+let nombreInv = String(fila[0] || "").trim()
+
+if(nombreInv === nombre){
+
+let vendidoActual = Number(fila[3] || 0)
+let restanteActual = Number(fila[4] || 0)
+
+let nuevoVendido = vendidoActual + Number(cantidad)
+let nuevoRestante = restanteActual - Number(cantidad)
+
+if(nuevoRestante < 0){
+nuevoRestante = 0
+}
+
+await sheets.spreadsheets.values.update({
+
+spreadsheetId,
+
+range:`Inventario!D${i+2}:E${i+2}`,
+
+valueInputOption:"USER_ENTERED",
+
+requestBody:{
+values:[[
+nuevoVendido,
+nuevoRestante
+]]
+}
+
+})
+
+break
+
+}
+
+}
+
+
+
 res.json({ok:true})
 
 }catch(e){
