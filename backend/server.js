@@ -791,13 +791,16 @@ precio,
 cantidad
 } = req.body
 
+const spreadsheetId =
+"1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"  
+
 const total = Number(precio) * Number(cantidad)
 
 const fecha = new Date().toLocaleDateString("es-CO")
 
 await sheets.spreadsheets.values.append({
 
-spreadsheetId:"1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc",
+spreadsheetId,
 
 range:"Ventas!A:G",
 
@@ -834,8 +837,13 @@ let nombreInv = String(fila[0] || "").trim()
 
 if(nombreInv === nombre){
 
-let vendidoActual = Number(fila[3] || 0)
-let restanteActual = Number(fila[4] || 0)
+let vendidoActual = Number(
+String(fila[3] || 0).replace(/[^0-9]/g,"")
+) || 0
+
+let restanteActual = Number(
+String(fila[4] || 0).replace(/[^0-9]/g,"")
+) || 0
 
 let nuevoVendido = vendidoActual + Number(cantidad)
 let nuevoRestante = restanteActual - Number(cantidad)
