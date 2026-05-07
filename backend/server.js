@@ -1215,7 +1215,10 @@ const buscar = await drive.files.list({
 
 q: `'${carpetaRaizId}' in parents and name='${nombreMes}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
 
-fields:"files(id,name)"
+fields:"files(id,name)",
+
+supportsAllDrives:true,
+includeItemsFromAllDrives:true
 
 })
 
@@ -1233,7 +1236,9 @@ mimeType:"application/vnd.google-apps.folder",
 parents:[carpetaRaizId]
 },
 
-fields:"id"
+fields:"id",
+
+supportsAllDrives:true
 
 })
 
@@ -1263,7 +1268,22 @@ mimeType:req.file.mimetype,
 body:bufferStream
 },
 
-fields:"id"
+fields:"id",
+
+supportsAllDrives:true
+
+})
+
+await drive.permissions.create({
+
+fileId: archivo.data.id,
+
+requestBody:{
+role:"reader",
+type:"anyone"
+},
+
+supportsAllDrives:true
 
 })
 
