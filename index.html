@@ -3,6 +3,7 @@
 <head>
 
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
@@ -616,6 +617,155 @@ color:red;
 font-weight:bold;
 }
 
+/* =========================================
+   RESPONSIVE MOVIL
+========================================= */
+
+.menuToggle{
+display:none;
+position:fixed;
+top:10px;
+left:10px;
+z-index:99999;
+background:#f39c12;
+color:white;
+border:none;
+padding:10px 14px;
+border-radius:8px;
+font-size:20px;
+cursor:pointer;
+}
+
+/* TABLETS Y CELULARES */
+
+@media screen and (max-width: 900px){
+
+.sidebar{
+transform:translateX(-100%);
+transition:0.3s;
+z-index:9999;
+}
+
+.sidebar.activa{
+transform:translateX(0);
+}
+
+.menuToggle{
+display:block;
+}
+
+.content{
+margin-left:0;
+margin-right:0;
+padding:12px;
+width:100%;
+}
+
+.cuentaPanel{
+position:relative;
+width:100%;
+height:auto;
+border-left:none;
+margin-top:20px;
+}
+
+#resultados{
+grid-template-columns:repeat(2,1fr);
+max-width:100%;
+}
+
+.producto{
+padding:10px;
+}
+
+.producto b{
+font-size:13px;
+}
+
+.topBar{
+flex-direction:column;
+align-items:flex-start;
+gap:8px;
+}
+
+.loginBox{
+width:90%;
+max-width:320px;
+padding:25px;
+box-sizing:border-box;
+}
+
+.cardForm{
+max-width:100%;
+}
+
+.filtrosDashboard{
+flex-direction:column;
+align-items:stretch;
+}
+
+.filtrosDashboard input,
+.filtrosDashboard select,
+.btnFiltrar{
+width:100%;
+box-sizing:border-box;
+}
+
+canvas{
+height:260px !important;
+}
+
+.tablaPro{
+display:block;
+overflow-x:auto;
+white-space:nowrap;
+}
+
+table{
+display:block;
+overflow-x:auto;
+white-space:nowrap;
+}
+
+.mesa{
+width:100%;
+height:65px;
+}
+
+#mesasContainer{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+}
+
+}
+
+/* CELULARES PEQUEÑOS */
+
+@media screen and (max-width: 600px){
+
+#resultados{
+grid-template-columns:1fr;
+}
+
+#mesasContainer{
+grid-template-columns:1fr;
+}
+
+.sidebar{
+width:240px;
+}
+
+.topItem{
+font-size:12px;
+}
+
+.kpiCard{
+width:100%;
+min-width:unset;
+}
+
+}
 
 </style>
 
@@ -624,6 +774,10 @@ font-weight:bold;
 </head>
 
 <body>
+
+<button class="menuToggle" onclick="toggleMenu()">
+☰
+</button>
 
 <div id="loginScreen">
 
@@ -2825,6 +2979,14 @@ console.log(err)
 alert("Error servidor")
 
 })
+
+}
+
+function toggleMenu(){
+
+document
+.querySelector(".sidebar")
+.classList.toggle("activa")
 
 }
 
