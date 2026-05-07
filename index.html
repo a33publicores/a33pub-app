@@ -989,9 +989,9 @@ placeholder="Valor Unitario"
 >
 
 <input
-type="text"
+type="file"
 id="gastoSoporte"
-placeholder="Link soporte"
+accept="image/*,.pdf"
 >
 
 <button class="btnGuardar" onclick="guardarGasto()">
@@ -2754,15 +2754,36 @@ return
 
 }
 
-api("registrarGasto",{
+const formData = new FormData()
 
-producto,
-cantidad,
-valor,
-soporte
+formData.append(
+"producto",
+producto
+)
+
+formData.append(
+"cantidad",
+cantidad
+)
+
+formData.append(
+"valor",
+valor
+)
+
+formData.append(
+"soporte",
+document.getElementById("gastoSoporte").files[0]
+)
+
+fetch(`${API}/registrarGasto`,{
+
+method:"POST",
+body:formData
 
 })
-.then(()=>{
+.then(r=>r.json())
+.then(data=>{
 
 alert("✅ Gasto guardado")
 
@@ -2770,16 +2791,14 @@ document.getElementById("gastoCantidad").value=""
 document.getElementById("gastoValor").value=""
 document.getElementById("gastoSoporte").value=""
 
-cargarProductos()
-
 cargarInventario()
 
 })
 .catch(err=>{
 
-console.error(err)
+console.log(err)
 
-alert("Error guardando gasto")
+alert("Error guardando")
 
 })
 
