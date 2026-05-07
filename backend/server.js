@@ -533,7 +533,7 @@ await sheets.spreadsheets.values.append({
 spreadsheetId:
 "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc",
 
-range:"Mesas!A:A",
+range:"MESAS!A:A",
 
 valueInputOption:"USER_ENTERED",
 
@@ -1073,7 +1073,7 @@ requestBody:{
 requests:[{
 deleteDimension:{
 range:{
-sheetId:0,
+sheetId:2092970043,
 dimension:"ROWS",
 startIndex:filaMesa-1,
 endIndex:filaMesa
