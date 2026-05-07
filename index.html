@@ -1625,10 +1625,16 @@ total.innerText = "TOTAL $" + totalActual.toLocaleString()
 
 const tarjetas = document.querySelectorAll(".mesa")
 
-if(tarjetas[mesaSeleccionada]){
+tarjetas.forEach(card=>{
 
-let divTotal = tarjetas[mesaSeleccionada]
-.querySelector(".mesaTotal")
+let nombreMesa = card
+.querySelector("div div")
+.innerText
+.trim()
+
+if(nombreMesa === cuenta){
+
+let divTotal = card.querySelector(".mesaTotal")
 
 if(divTotal){
 
@@ -1638,6 +1644,8 @@ divTotal.innerText =
 }
 
 }
+
+})
 
 /* ANIMAR TOTAL */
 total.classList.add("animarTotal")
@@ -1652,6 +1660,11 @@ cuenta,
 nombre,
 precio,
 cantidad
+})
+.then(()=>{
+
+cargarTopBar()
+
 })
 .catch(err=>{
 console.error(err)
