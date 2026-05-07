@@ -1,5 +1,7 @@
 const express = require("express")
 const cors = require("cors")
+const multer = require("multer")
+const upload = multer({ storage: multer.memoryStorage() })
 const app = express()
 const { google } = require("googleapis")
 
@@ -668,6 +670,11 @@ version:"v4",
 auth
 })
 
+  const drive = google.drive({
+version:"v3",
+auth
+})
+
 const spreadsheetId = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
 
 await sheets.spreadsheets.values.append({
@@ -1165,24 +1172,137 @@ error:String(error)
 
 const PORT = process.env.PORT || 3000
 
-app.post("/registrarGasto", async (req,res)=>{
+app.post(
+"/registrarGasto",
+upload.single("soporte"),
+async (req,res)=>{
 
 try{
 
 const {
 producto,
 cantidad,
-valor,
-soporte
+valor
 } = req.body
+
+const archivo = req.file
 
 const total =
 Number(cantidad) * Number(valor)
 
-const fecha =
-new Date().toLocaleString("es-CO")
+const fechaObj = new Date()
 
-/* GUARDAR EN GASTOS */
+const fecha =
+fechaObj.toLocaleString("es-CO")
+
+const meses = [
+"Enero",
+"Febrero",
+"Marzo",
+"Abril",
+"Mayo",
+"Junio",
+"Julio",
+"Agosto",
+"Septiembre",
+"Octubre",
+"Noviembre",
+"Diciembre"
+]
+
+const nombreMes =
+`${meses[fechaObj.getMonth()]} ${fechaObj.getFullYear()}`
+
+const carpetaPadre =
+"19ZGVHP198D7GxA7OrYHjBTnajE_LyT_-"
+
+let folderId = null
+
+/* BUSCAR CARPETA */
+
+const buscar =
+await drive.files.list({
+
+q: `
+'${carpetaPadre}' in parents
+and mimeType='application/vnd.google-apps.folder'
+and name='${nombreMes}'
+and trashed=false
+`,
+
+fields:"files(id,name)"
+
+})
+
+if(buscar.data.files.length > 0){
+
+folderId =
+buscar.data.files[0].id
+
+}else{
+
+/* CREAR CARPETA */
+
+const carpeta =
+await drive.files.create({
+
+requestBody:{
+name:nombreMes,
+mimeType:"application/vnd.google-apps.folder",
+parents:[carpetaPadre]
+},
+
+fields:"id"
+
+})
+
+folderId = carpeta.data.id
+
+}
+
+/* SUBIR ARCHIVO */
+
+let soporteLink = ""
+
+if(archivo){
+
+const subida =
+await drive.files.create({
+
+requestBody:{
+name:archivo.originalname,
+parents:[folderId]
+},
+
+media:{
+mimeType:archivo.mimetype,
+body:Buffer.from(archivo.buffer)
+},
+
+fields:"id"
+
+})
+
+const fileId =
+subida.data.id
+
+await drive.permissions.create({
+
+fileId,
+
+requestBody:{
+role:"reader",
+type:"anyone"
+}
+
+})
+
+soporteLink =
+`https://drive.google.com/file/d/${fileId}/view`
+
+}
+
+/* GUARDAR EN SHEETS */
 
 await sheets.spreadsheets.values.append({
 
@@ -1199,13 +1319,13 @@ producto,
 cantidad,
 valor,
 total,
-soporte
+soporteLink
 ]]
 }
 
 })
 
-/* OBTENER INVENTARIO */
+/* ACTUALIZAR INVENTARIO */
 
 const inventario =
 await sheets.spreadsheets.values.get({
@@ -1269,8 +1389,9 @@ ok:true
 
 console.log(error)
 
-res.json({
-ok:false
+res.status(500).json({
+ok:false,
+error:error.message
 })
 
 }
