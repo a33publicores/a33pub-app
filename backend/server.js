@@ -930,6 +930,116 @@ res.json([])
 
 })
 
+// ==========================
+// CERRAR / PAGAR MESA
+// ==========================
+app.post("/cerrarMesa", async (req,res)=>{
+
+try{
+
+const { cuenta, metodo } = req.body
+
+if(!cuenta){
+
+return res.status(400).json({
+ok:false,
+error:"Cuenta requerida"
+})
+
+}
+
+const response = await fetch(
+"https://opensheet.elk.sh/1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc/Ventas"
+)
+
+const data = await response.json()
+
+if(!Array.isArray(data)){
+
+return res.json({
+ok:false,
+error:"No hay ventas"
+})
+
+}
+
+/* FILAS A PAGAR */
+const filas = []
+
+data.forEach((row,index)=>{
+
+const mesaRow = String(
+row.Mesa ||
+row.mesa ||
+""
+).trim()
+
+const estado = String(
+row.Estado ||
+row.estado ||
+""
+).trim().toUpperCase()
+
+if(
+mesaRow === cuenta &&
+estado !== "PAGADO"
+){
+
+filas.push(index + 2)
+
+}
+
+})
+
+/* SI NO HAY FILAS */
+if(filas.length === 0){
+
+return res.json({
+ok:true
+})
+
+}
+
+/* ACTUALIZAR GOOGLE SHEETS */
+for(const fila of filas){
+
+await sheets.spreadsheets.values.update({
+
+spreadsheetId:
+"1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc",
+
+range:`Ventas!G${fila}:H${fila}`,
+
+valueInputOption:"USER_ENTERED",
+
+requestBody:{
+values:[[
+"PAGADO",
+metodo || "Efectivo"
+]]
+}
+
+})
+
+}
+
+res.json({
+ok:true
+})
+
+}catch(error){
+
+console.log("ERROR CERRAR MESA:", error)
+
+res.status(500).json({
+ok:false,
+error:String(error)
+})
+
+}
+
+})
+
 const PORT = process.env.PORT || 3000
 
 app.listen(PORT, ()=>{
