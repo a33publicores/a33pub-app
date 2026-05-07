@@ -1646,25 +1646,16 @@ setTimeout(()=>{
 total.classList.remove("animarTotal")
 },400)
 
-/* 🔥 GUARDAR EN BACKEND (FETCH) */
+/* 🔥 GUARDAR EN BACKEND */
 api("registrarVenta",{
 cuenta,
 nombre,
 precio,
 cantidad
 })
-
-/* ACTUALIZAR MESAS */
-/* ACTUALIZAR MESAS */
-setTimeout(()=>{
-cargarMesas()
-},500)
-
-if(mesaSeleccionada != null){
-setTimeout(()=>{
-verCuenta()
-},500)
-}
+.catch(err=>{
+console.error(err)
+})
 
 }
 
