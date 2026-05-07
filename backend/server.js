@@ -1,7 +1,8 @@
 const express = require("express")
 const cors = require("cors")
 const multer = require("multer")
-const upload = multer({ storage: multer.memoryStorage() })
+const stream = require("stream")
+const upload = multer()
 const app = express()
 const { google } = require("googleapis")
 
@@ -1172,141 +1173,104 @@ error:String(error)
 
 const PORT = process.env.PORT || 3000
 
-app.post(
-"/registrarGasto",
-upload.single("soporte"),
-async (req,res)=>{
+app.post("/registrarGasto", upload.single("soporte"), async(req,res)=>{
 
 try{
 
-const {
-producto,
-cantidad,
-valor
-} = req.body
+const producto = req.body.producto
+const cantidad = Number(req.body.cantidad || 0)
+const valor = Number(req.body.valor || 0)
 
-const archivo = req.file
+const total = cantidad * valor
 
-const total =
-Number(cantidad) * Number(valor)
+let soporteLink = ""
 
-const fechaObj = new Date()
+/* SUBIR SOPORTE SI EXISTE */
 
-const fecha =
-fechaObj.toLocaleString("es-CO")
+if(req.file){
+
+const hoy = new Date()
 
 const meses = [
-"Enero",
-"Febrero",
-"Marzo",
-"Abril",
-"Mayo",
-"Junio",
-"Julio",
-"Agosto",
-"Septiembre",
-"Octubre",
-"Noviembre",
-"Diciembre"
+"Enero","Febrero","Marzo","Abril",
+"Mayo","Junio","Julio","Agosto",
+"Septiembre","Octubre","Noviembre","Diciembre"
 ]
 
 const nombreMes =
-`${meses[fechaObj.getMonth()]} ${fechaObj.getFullYear()}`
+meses[hoy.getMonth()] + " " + hoy.getFullYear()
 
-const carpetaPadre =
+const carpetaRaizId =
 "19ZGVHP198D7GxA7OrYHjBTnajE_LyT_-"
-
-let folderId = null
 
 /* BUSCAR CARPETA */
 
-const buscar =
-await drive.files.list({
+const buscar = await drive.files.list({
 
-q: `
-'${carpetaPadre}' in parents
-and mimeType='application/vnd.google-apps.folder'
-and name='${nombreMes}'
-and trashed=false
-`,
+q: `'${carpetaRaizId}' in parents and name='${nombreMes}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
 
 fields:"files(id,name)"
 
 })
 
-if(buscar.data.files.length > 0){
+let carpetaMesId=""
 
-folderId =
-buscar.data.files[0].id
+/* SI NO EXISTE -> CREAR */
 
-}else{
+if(buscar.data.files.length===0){
 
-/* CREAR CARPETA */
-
-const carpeta =
-await drive.files.create({
+const carpeta = await drive.files.create({
 
 requestBody:{
 name:nombreMes,
 mimeType:"application/vnd.google-apps.folder",
-parents:[carpetaPadre]
+parents:[carpetaRaizId]
 },
 
 fields:"id"
 
 })
 
-folderId = carpeta.data.id
+carpetaMesId = carpeta.data.id
+
+}else{
+
+carpetaMesId = buscar.data.files[0].id
 
 }
 
 /* SUBIR ARCHIVO */
 
-let soporteLink = ""
+const bufferStream = new stream.PassThrough()
 
-if(archivo){
+bufferStream.end(req.file.buffer)
 
-const subida =
-await drive.files.create({
+const archivo = await drive.files.create({
 
 requestBody:{
-name:archivo.originalname,
-parents:[folderId]
+name:req.file.originalname,
+parents:[carpetaMesId]
 },
 
 media:{
-mimeType:archivo.mimetype,
-body:Buffer.from(archivo.buffer)
+mimeType:req.file.mimetype,
+body:bufferStream
 },
 
 fields:"id"
 
 })
 
-const fileId =
-subida.data.id
-
-await drive.permissions.create({
-
-fileId,
-
-requestBody:{
-role:"reader",
-type:"anyone"
-}
-
-})
-
 soporteLink =
-`https://drive.google.com/file/d/${fileId}/view`
+`https://drive.google.com/file/d/${archivo.data.id}/view`
 
 }
 
-/* GUARDAR EN SHEETS */
+/* GUARDAR EN GASTOS */
 
 await sheets.spreadsheets.values.append({
 
-spreadsheetId,
+spreadsheetId:SPREADSHEET_ID,
 
 range:"GASTOS!A:F",
 
@@ -1314,7 +1278,7 @@ valueInputOption:"USER_ENTERED",
 
 requestBody:{
 values:[[
-fecha,
+new Date(),
 producto,
 cantidad,
 valor,
@@ -1330,54 +1294,61 @@ soporteLink
 const inventario =
 await sheets.spreadsheets.values.get({
 
-spreadsheetId,
-
-range:"Inventario!A2:F"
+spreadsheetId:SPREADSHEET_ID,
+range:"Inventario!A:F"
 
 })
 
-const filas =
-inventario.data.values || []
+const filas = inventario.data.values || []
 
-for(let i=0;i<filas.length;i++){
+let filaProducto = -1
 
-let fila = filas[i]
+for(let i=1;i<filas.length;i++){
 
-let nombre =
-String(fila[0] || "").trim()
+if(
+String(filas[i][0]).trim().toUpperCase()
+===
+String(producto).trim().toUpperCase()
+){
 
-if(nombre === producto){
+filaProducto = i + 1
+break
 
-let stock =
-Number(fila[2] || 0)
+}
 
-let restante =
-Number(fila[4] || 0)
+}
 
-stock += Number(cantidad)
-restante += Number(cantidad)
+if(filaProducto!=-1){
+
+const stockActual =
+Number(filas[filaProducto-1][2] || 0)
+
+const nuevoStock =
+stockActual + cantidad
+
+const vendido =
+Number(filas[filaProducto-1][3] || 0)
+
+const restante =
+nuevoStock - vendido
 
 await sheets.spreadsheets.values.update({
 
-spreadsheetId,
+spreadsheetId:SPREADSHEET_ID,
 
-range:`Inventario!C${i+2}:E${i+2}`,
+range:`Inventario!C${filaProducto}:E${filaProducto}`,
 
 valueInputOption:"USER_ENTERED",
 
 requestBody:{
 values:[[
-stock,
-fila[3] || 0,
+nuevoStock,
+vendido,
 restante
 ]]
 }
 
 })
-
-break
-
-}
 
 }
 
@@ -1387,11 +1358,10 @@ ok:true
 
 }catch(error){
 
-console.log(error)
+console.log("ERROR GASTO:",error)
 
 res.status(500).json({
-ok:false,
-error:error.message
+error:String(error)
 })
 
 }
