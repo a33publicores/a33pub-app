@@ -974,7 +974,8 @@ margin:auto;
 width:100%;
 ">
 
-<select id="gastoProducto"></select>
+<select id="gastoProducto"
+onchange="actualizarDatosGasto()">
 
 <input
 type="number"
@@ -1064,7 +1065,7 @@ Pagar Mesa
 
 <script>
 let usuarioActual=null
-let productos=[]
+PRODUCTOS = data
 let mesas=[]
 let mesaSeleccionada=null
 
@@ -2716,12 +2717,17 @@ alert("Error creando mesa")
 
 function cargarProductosGastos(){
 
+api("obtenerProductos")
+.then(function(data){
+
+PRODUCTOS = data
+
 let select =
 document.getElementById("gastoProducto")
 
-select.innerHTML=""
+select.innerHTML = ""
 
-productos.forEach(p=>{
+data.forEach(function(p){
 
 select.innerHTML += `
 <option value="${p.nombre}">
@@ -2730,6 +2736,31 @@ ${p.nombre}
 `
 
 })
+
+if(data.length > 0){
+
+actualizarDatosGasto()
+
+}
+
+})
+}
+
+function actualizarDatosGasto(){
+
+let producto =
+document.getElementById("gastoProducto").value
+
+let encontrado =
+PRODUCTOS.find(p => p.nombre === producto)
+
+if(!encontrado) return
+
+document.getElementById("gastoCantidad").value =
+encontrado.cantidadDeposito || 0
+
+document.getElementById("gastoValor").value =
+encontrado.valorDeposito || 0
 
 }
 
