@@ -1340,7 +1340,7 @@ console.warn("Mesas inválidas")
 return
 }
 
-mesas = data.map(m => m.nombre)
+mesas = data
 
 data.forEach(function(mesa){
 
@@ -1440,7 +1440,7 @@ function verCuenta(){
 
 if(mesaSeleccionada==null) return
 
-let cuenta = mesas[mesaSeleccionada]
+let cuenta = mesas[mesaSeleccionada].nombre
 
 document.getElementById("tituloCuenta").innerText =
 "Cuenta - " + cuenta
@@ -1601,7 +1601,7 @@ animarVuelo(tarjeta)
 }
 
 /* OBTENER CUENTA */
-let cuenta = mesas[mesaSeleccionada]
+let cuenta = mesas[mesaSeleccionada].nombre
 
 let cantidad = Number(document.getElementById("cant_"+id).value)
 
@@ -1735,7 +1735,7 @@ alert("Selecciona una mesa")
 return
 }
 
-let cuenta = mesas[mesaSeleccionada]
+let cuenta = mesas[mesaSeleccionada].nombre
 
 /* 💳 SELECCIONAR METODO DE PAGO */
 let metodo = prompt(
