@@ -23,6 +23,7 @@ const auth = new google.auth.GoogleAuth({
 "https://www.googleapis.com/auth/spreadsheets",
 "https://www.googleapis.com/auth/drive"
 ]
+})
 
 const sheets = google.sheets({
   version: "v4",
