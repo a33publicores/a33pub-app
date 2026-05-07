@@ -27,6 +27,14 @@ const sheets = google.sheets({
   auth
 })
 
+const drive = google.drive({
+  version: "v3",
+  auth
+})
+
+const SPREADSHEET_ID =
+"1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
+
 app.set("trust proxy", 1)
 
 /* 🔥 CORS PROFESIONAL (SOLUCIÓN REAL) */
