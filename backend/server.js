@@ -1165,6 +1165,118 @@ error:String(error)
 
 const PORT = process.env.PORT || 3000
 
+app.post("/registrarGasto", async (req,res)=>{
+
+try{
+
+const {
+producto,
+cantidad,
+valor,
+soporte
+} = req.body
+
+const total =
+Number(cantidad) * Number(valor)
+
+const fecha =
+new Date().toLocaleString("es-CO")
+
+/* GUARDAR EN GASTOS */
+
+await sheets.spreadsheets.values.append({
+
+spreadsheetId,
+
+range:"GASTOS!A:F",
+
+valueInputOption:"USER_ENTERED",
+
+requestBody:{
+values:[[
+fecha,
+producto,
+cantidad,
+valor,
+total,
+soporte
+]]
+}
+
+})
+
+/* OBTENER INVENTARIO */
+
+const inventario =
+await sheets.spreadsheets.values.get({
+
+spreadsheetId,
+
+range:"Inventario!A2:F"
+
+})
+
+const filas =
+inventario.data.values || []
+
+for(let i=0;i<filas.length;i++){
+
+let fila = filas[i]
+
+let nombre =
+String(fila[0] || "").trim()
+
+if(nombre === producto){
+
+let stock =
+Number(fila[2] || 0)
+
+let restante =
+Number(fila[4] || 0)
+
+stock += Number(cantidad)
+restante += Number(cantidad)
+
+await sheets.spreadsheets.values.update({
+
+spreadsheetId,
+
+range:`Inventario!C${i+2}:E${i+2}`,
+
+valueInputOption:"USER_ENTERED",
+
+requestBody:{
+values:[[
+stock,
+fila[3] || 0,
+restante
+]]
+}
+
+})
+
+break
+
+}
+
+}
+
+res.json({
+ok:true
+})
+
+}catch(error){
+
+console.log(error)
+
+res.json({
+ok:false
+})
+
+}
+
+})
+
 app.listen(PORT, ()=>{
 console.log("Servidor corriendo en " + PORT)
 })
