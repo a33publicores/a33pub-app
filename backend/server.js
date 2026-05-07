@@ -623,10 +623,14 @@ total += totalVenta
 
 })
 
+if(total > 0){
+
 lista.push({
 nombre,
 total
 })
+
+}
 
 })
 
