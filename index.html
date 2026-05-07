@@ -1912,7 +1912,7 @@ html+=`
 <td>${Number(p.vendido)||0}</td>
 
 <td style="font-weight:bold;color:#27ae60">
-${Number(p.restante)||0}
+${(Number(p.stock || 0) - Number(p.vendido || 0))}
 </td>
 
 <td>
@@ -2791,6 +2791,7 @@ document.getElementById("gastoValor").value=""
 document.getElementById("gastoSoporte").value=""
 
 cargarInventario()
+cargarProductos()
 
 })
 .catch(err=>{
