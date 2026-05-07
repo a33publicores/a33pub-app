@@ -60,24 +60,76 @@ app.use((req, res, next) => {
   next()
 })
 
+
+
 app.use(express.json())
 
+async function obtenerUsuarios(){
+
+const response =
+await sheets.spreadsheets.values.get({
+
+spreadsheetId:SPREADSHEET_ID,
+range:"Usuarios!A2:C"
+
+})
+
+const filas = response.data.values || []
+
+return filas.map(fila => ({
+
+usuario: String(fila[0] || "").trim(),
+clave: String(fila[1] || "").trim(),
+rol: String(fila[2] || "vendedor").trim()
+
+}))
+
+}
 // ==========================
 // LOGIN
 // ==========================
 app.post("/login", (req,res)=>{
 
+app.post("/login", async(req,res)=>{
+
+try{
+
 const {usuario,clave} = req.body
 
-if(usuario === "admin" && clave === "1234"){
+const usuarios = await obtenerUsuarios()
+
+const encontrado = usuarios.find(u =>
+
+u.usuario === String(usuario).trim() &&
+u.clave === String(clave).trim()
+
+)
+
+if(encontrado){
+
 return res.json({
+
 ok:true,
-usuario:"admin",
-rol:"admin"
+usuario:encontrado.usuario,
+rol:encontrado.rol
+
 })
+
 }
 
-res.json({ok:false})
+res.json({
+ok:false
+})
+
+}catch(error){
+
+console.log("ERROR LOGIN:", error)
+
+res.json({
+ok:false
+})
+
+}
 
 })
 
