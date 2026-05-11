@@ -1334,6 +1334,10 @@ usuarioTop.innerText = usuarioActual.usuario
 
 let hoy = new Date()
 
+fechaTop.innerText = hoy.toLocaleDateString("es-CO", {
+  timeZone: "America/Bogota"
+})
+
 fechaTop.innerText = hoy.toLocaleDateString()
 
 /* RELOJ EN VIVO */
