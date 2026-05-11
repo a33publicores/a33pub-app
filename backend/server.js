@@ -430,10 +430,10 @@ let anterior = {}
 
 data.forEach(row=>{
 let total = Number(row.Total || row.total || 0)
-let fecha = new Date(row.Fecha || row.fecha)
+let fecha = obtenerFechaColombia((row.Fecha || row.fecha)
 let dia = fecha.toLocaleDateString("es-CO",{weekday:"long"})
 
-let hoy = new Date()
+let hoy = obtenerFechaColombia()
 let diff = (hoy - fecha) / (1000*60*60*24)
 
 if(diff <= 7){
@@ -860,7 +860,7 @@ const spreadsheetId =
 
 const total = Number(precio) * Number(cantidad)
 
-const fecha = new Date().toLocaleDateString("es-CO")
+const fecha = obtenerFechaColombia()
 
 await sheets.spreadsheets.values.append({
 
@@ -1245,7 +1245,28 @@ let soporteLink = ""
 
 if(req.file){
 
-const hoy = new Date()
+const hoy = obtenerFechaColombia()
+
+const fecha =
+String(hoy.getDate()).padStart(2, "0") + "/" +
+String(hoy.getMonth() + 1).padStart(2, "0") + "/" +
+hoy.getFullYear()
+
+await sheets.spreadsheets.values.append({
+  spreadsheetId: SPREADSHEET_ID,
+  range: "GASTOS!A:F",
+  valueInputOption: "USER_ENTERED",
+  requestBody: {
+    values: [[
+      fecha,
+      producto,
+      cantidad,
+      valor,
+      total,
+      soporteLink
+    ]]
+  }
+})
 
 const meses = [
 "Enero","Febrero","Marzo","Abril",
@@ -1354,7 +1375,7 @@ valueInputOption:"USER_ENTERED",
 
 requestBody:{
 values:[[
-new Date(),
+obtenerFechaColombia(),
 producto,
 cantidad,
 valor,
