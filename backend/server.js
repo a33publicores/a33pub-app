@@ -430,7 +430,7 @@ let anterior = {}
 
 data.forEach(row=>{
 let total = Number(row.Total || row.total || 0)
-let fecha = obtenerFechaColombia((row.Fecha || row.fecha)
+let fecha = obtenerFechaColombia(row.Fecha || row.fecha)
 let dia = fecha.toLocaleDateString("es-CO",{weekday:"long"})
 
 let hoy = obtenerFechaColombia()
