@@ -2994,6 +2994,19 @@ document
 
 }
 
+<script>
+function obtenerFechaColombia() {
+  return new Date().toLocaleDateString("es-CO", {
+    timeZone: "America/Bogota"
+  });
+}
+
+function obtenerHoraColombia() {
+  return new Date().toLocaleTimeString("es-CO", {
+    timeZone: "America/Bogota"
+  });
+}
+
 </script>
 
 </body>
