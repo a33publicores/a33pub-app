@@ -1334,10 +1334,7 @@ usuarioTop.innerText = usuarioActual.usuario
 
 let hoy = new Date()
 
-fechaTop.innerText = hoy.toLocaleDateString("es-CO", {
-  timeZone: "America/Bogota"
-})
-
+fechaTop.innerText = hoy.toLocaleDateString()
 
 /* RELOJ EN VIVO */
 
@@ -2992,19 +2989,6 @@ document
 .classList.toggle("activa")
 
 }
-
-<script>
-function obtenerFechaColombia() {
-  return new Date().toLocaleDateString("es-CO", {
-    timeZone: "America/Bogota"
-  });
-}
-
-function obtenerHoraColombia() {
-  return new Date().toLocaleTimeString("es-CO");
-}
-
-function hacerLogin() {
 
 </script>
 
