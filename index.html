@@ -1338,7 +1338,6 @@ fechaTop.innerText = hoy.toLocaleDateString("es-CO", {
   timeZone: "America/Bogota"
 })
 
-fechaTop.innerText = hoy.toLocaleDateString()
 
 /* RELOJ EN VIVO */
 
@@ -3002,10 +3001,10 @@ function obtenerFechaColombia() {
 }
 
 function obtenerHoraColombia() {
-  return new Date().toLocaleTimeString("es-CO", {
-    timeZone: "America/Bogota"
-  });
+  return new Date().toLocaleTimeString("es-CO");
 }
+
+function hacerLogin() {
 
 </script>
 
