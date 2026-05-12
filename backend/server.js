@@ -303,39 +303,53 @@ res.json([])
 
 })
 
-app.post("/obtenerResumenMesas", async (req,res)=>{
+app.post("/obtenerResumenMesas", async (req, res) => {
+  try {
+    const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc";
+    const url = https://opensheet.elk.sh/${sheetID}/Ventas;
 
-try{
+    const response = await fetch(url);
+    const data = await response.json();
 
-const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
-const url = `https://opensheet.elk.sh/${sheetID}/Ventas`
+    let resumen = {};
 
-const response = await fetch(url)
-const data = await response.json()
+    data.forEach(row => {
+      const mesa = String(
+        row.Mesa ||
+        row.mesa ||
+        row.Cuenta ||
+        row.cuenta ||
+        ""
+      ).trim();
 
-let resumen = {}
+      const estado = String(
+        row.Estado ||
+        row.estado ||
+        ""
+      ).trim().toUpperCase();
 
-data.forEach(row=>{
-let mesa = (row.Mesa || row.mesa || "").trim()
-let precio = Number(
-String(row.Precio || 0).replace(/[^0-9]/g,"")
-) || 0
+      // Solo contar ventas pendientes (mesas abiertas)
+      if (!mesa || estado === "PAGADO") return;
 
-let cantidad = Number(row.Cantidad || 0)
+      const total = Number(
+        String(row.Total || row.total || 0)
+          .replace(/[^0-9]/g, "")
+      ) || 0;
 
-let total = precio * cantidad
+      if (!resumen[mesa]) {
+        resumen[mesa] = 0;
+      }
 
-if(!resumen[mesa]) resumen[mesa] = 0
-resumen[mesa] += total
-})
+      resumen[mesa] += total;
+    });
 
-res.json(resumen)
+    res.json(resumen);
 
-}catch(err){
-res.json({ok:false,error:err.toString()})
-}
-
-})
+  } catch (err) {
+    console.log("ERROR RESUMEN MESAS:", err);
+    res.json({});
+  }
+});
 
 app.post("/datosGraficos", async (req,res)=>{
 
