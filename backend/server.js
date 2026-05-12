@@ -306,14 +306,14 @@ res.json([])
 app.post("/obtenerResumenMesas", async (req, res) => {
   try {
     const sheetID = "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc";
-    const url = https://opensheet.elk.sh/${sheetID}/Ventas;
+    const url = "https://opensheet.elk.sh/" + sheetID + "/Ventas";
 
     const response = await fetch(url);
     const data = await response.json();
 
-    let resumen = {};
+    const resumen = {};
 
-    data.forEach(row => {
+    data.forEach((row) => {
       const mesa = String(
         row.Mesa ||
         row.mesa ||
@@ -328,12 +328,13 @@ app.post("/obtenerResumenMesas", async (req, res) => {
         ""
       ).trim().toUpperCase();
 
-      // Solo contar ventas pendientes (mesas abiertas)
-      if (!mesa || estado === "PAGADO") return;
+      // Ignorar filas sin mesa o ya pagadas
+      if (!mesa || estado === "PAGADO") {
+        return;
+      }
 
       const total = Number(
-        String(row.Total || row.total || 0)
-          .replace(/[^0-9]/g, "")
+        String(row.Total || row.total || 0).replace(/[^0-9]/g, "")
       ) || 0;
 
       if (!resumen[mesa]) {
@@ -344,9 +345,8 @@ app.post("/obtenerResumenMesas", async (req, res) => {
     });
 
     res.json(resumen);
-
-  } catch (err) {
-    console.log("ERROR RESUMEN MESAS:", err);
+  } catch (error) {
+    console.log("ERROR RESUMEN MESAS:", error);
     res.json({});
   }
 });
