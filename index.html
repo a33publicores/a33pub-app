@@ -656,17 +656,27 @@ display:block;
 
 .content{
 margin-left:0;
-margin-right:0;
+margin-right:35%;
 padding:12px;
-width:100%;
+width:auto;
+box-sizing:border-box;
 }
 
 .cuentaPanel{
-position:relative;
-width:100%;
-height:auto;
-border-left:none;
-margin-top:20px;
+position:fixed;
+right:0;
+top:0;
+width:35%;
+min-width:260px;
+max-width:320px;
+height:100%;
+margin-top:0;
+border-left:1px solid #2c3e50;
+background:#1b2530;
+padding:20px;
+overflow:auto;
+z-index:1000;
+box-sizing:border-box;
 }
 
 #resultados{
