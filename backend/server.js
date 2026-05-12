@@ -38,6 +38,13 @@ const drive = google.drive({
 const SPREADSHEET_ID =
 "1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc"
 
+
+function obtenerFechaColombia() {
+  return new Date().toLocaleDateString("es-CO", {
+    timeZone: "America/Bogota"
+  });
+}
+
 app.set("trust proxy", 1)
 
 /* 🔥 CORS PROFESIONAL (SOLUCIÓN REAL) */
@@ -1525,13 +1532,6 @@ error:String(error)
 
 })
 
-function obtenerFechaColombia() {
-  return new Date().toLocaleDateString("es-CO", {
-    timeZone: "America/Bogota"
-  });
-}
-
-const app = express();
 
 app.listen(PORT, ()=>{
 console.log("Servidor corriendo en " + PORT)
