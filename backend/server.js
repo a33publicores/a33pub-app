@@ -1525,6 +1525,14 @@ error:String(error)
 
 })
 
+function obtenerFechaColombia() {
+  return new Date().toLocaleDateString("es-CO", {
+    timeZone: "America/Bogota"
+  });
+}
+
+const app = express();
+
 app.listen(PORT, ()=>{
 console.log("Servidor corriendo en " + PORT)
 })
