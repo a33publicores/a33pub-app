@@ -1332,16 +1332,17 @@ usuarioTop.innerText = usuarioActual.usuario
 
 /* FECHA */
 
-let hoy = new Date()
+setInterval(() => {
+  const ahora = new Date();
 
-fechaTop.innerText = hoy.toLocaleDateString()
+  fechaTop.innerText = ahora.toLocaleDateString("es-CO", {
+    timeZone: "America/Bogota"
+  });
 
-/* RELOJ EN VIVO */
-
-setInterval(()=>{
-let ahora = new Date()
-horaTop.innerText = ahora.toLocaleTimeString()
-},1000)
+  horaTop.innerText = ahora.toLocaleTimeString("es-CO", {
+    timeZone: "America/Bogota"
+  });
+}, 1000);
 
 /* DINERO EN MESAS */
 
@@ -1623,6 +1624,7 @@ ${m}
 </div>
 `
 
+
 if(consumos[m]){
 div.classList.add("consumo")
 }
@@ -1776,10 +1778,22 @@ resultados.innerHTML += `
 
 </div>
 
-<button onclick="agregarProducto('${p.nombre}',${p.precio},${i})">
-Agregar
-</button>
+<div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+  <button onclick="agregarProducto('${p.nombre}', ${p.precio})">
+    Agregar
+  </button>
 
+  <span style="
+    font-size:12px;
+    background:${p.restante <= 5 ? '#ffdddd' : '#e8f5e9'};
+    color:${p.restante <= 5 ? '#c62828' : '#2e7d32'};
+    padding:4px 8px;
+    border-radius:6px;
+    font-weight:bold;
+    white-space:nowrap;
+  ">
+    Stock: ${p.restante}
+  </span>
 </div>
 
 `
