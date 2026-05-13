@@ -793,7 +793,7 @@ class="loginLogo"
 <input type="text" id="user" placeholder="Usuario"><br><br>
 <input type="password" id="pass" placeholder="Contraseña"><br><br>
 
-<button onclick="hacerLogin()">Ingresar</button>
+<button class="btnLogin" onclick="hacerLogin()">Ingresar</button>
 
 
 
@@ -3045,7 +3045,7 @@ async function cargarGastos(){
           <td>$${total.toLocaleString("es-CO")}</td>
           <td>
             ${soporte
-              ? <a href="${soporte}" target="_blank">Ver</a>
+              ? `<a href="${soporte}" target="_blank">Ver</a>`
               : "-"}
           </td>
         </tr>
