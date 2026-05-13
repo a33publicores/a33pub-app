@@ -2393,6 +2393,11 @@ boton.classList.add("activo")
 boton.innerHTML="🍺 "+boton.innerText
 }
 
+// Si está en celular, cerrar el menú automáticamente
+if (window.innerWidth <= 900) {
+  document.querySelector(".sidebar").classList.remove("activa");
+}
+
 }
 
 function cargarComparacionSemanas(){
