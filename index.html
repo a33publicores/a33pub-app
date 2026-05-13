@@ -2061,50 +2061,39 @@ productos = []
 
 /* INVENTARIO */
 
-function cargarInventario(){
+async function cargarInventario() {
+  try {
+    const data = await api("obtenerProductos");
 
-api("obtenerProductos").then(function(data){
+    const tabla = document.getElementById("tablaInventario");
+    tabla.innerHTML = "";
 
-let html=""
+    data.forEach(row => {
+      const producto = row.nombre || "";
+      const precio = Number(row.precio || 0);
+      const stock = Number(row.stock || 0);
+      const vendido = Number(row.vendido || 0);
+      const restante = Number(row.restante || 0);
 
-(data || []).forEach(function(p,i){
+      tabla.innerHTML += `
+        <tr>
+          <td>${producto}</td>
+          <td>$${precio.toLocaleString("es-CO")}</td>
+          <td>${stock}</td>
+          <td>${vendido}</td>
+          <td>${restante}</td>
+          <td>
+            <button onclick="editarProducto('${producto}')">
+              Editar
+            </button>
+          </td>
+        </tr>
+      `;
+    });
 
-html+=`
-
-<tr>
-
-<td>${p.nombre}</td>
-
-<td>
-<input type="number" value="${Number(p.precio)||0}" id="precio_${i}">
-</td>
-
-<td>
-<input type="number" value="${Number(p.stock)||0}" id="cantidad_${i}">
-</td>
-
-<td>${Number(p.vendido)||0}</td>
-
-<td style="font-weight:bold;color:#27ae60">
-${Number(p.stock || 0) - Number(p.vendido || 0)}
-</td>
-
-<td>
-<button>
-Guardar
-</button>
-</td>
-
-</tr>
-
-`
-
-})
-
-document.getElementById("tablaInventario").innerHTML = html
-
-})
-
+  } catch (error) {
+    console.error("Error cargando inventario:", error);
+  }
 }
 
 function guardarInversionUI(){
