@@ -2856,30 +2856,30 @@ alert("Error conectando con el servidor")
 
 }
 
-async function crearMesa(){
-  const nombre = prompt("Nombre de la mesa")
-  if(!nombre) return
+function crearMesa(){
 
-  // Mostrar inmediatamente en pantalla
-  const nuevaMesa = {
-    nombre: nombre.trim(),
-    total: 0
-  }
+let nombre = prompt("Nombre de la mesa")
 
-  mesas.push(nuevaMesa)
-  renderMesas()
+if(!nombre) return
 
-  try {
-    const resp = await api("crearMesa", { nombre })
+api("crearMesa",{
+nombre
+})
+.then((resp)=>{
 
-    if(!resp.ok){
-      alert("No se pudo crear la mesa")
-      cargarMesas()
-    }
-  } catch(e){
-    alert("Error al crear la mesa")
-    cargarMesas()
-  }
+console.log("MESA CREADA:", resp)
+
+cargarMesas()
+
+})
+.catch(err=>{
+
+console.error(err)
+
+alert("Error creando mesa")
+
+})
+
 }
 
 function cargarProductosGastos(){
