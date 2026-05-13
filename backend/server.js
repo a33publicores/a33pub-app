@@ -1532,6 +1532,21 @@ error:String(error)
 
 })
 
+app.post("/obtenerGastos", async (req, res) => {
+  try {
+    const response = await fetch(
+      "https://opensheet.elk.sh/1WISk42O7lMEAJzpHyRV938k71vP7eybS3MxEyxagpcc/GASTOS"
+    );
+
+    const data = await response.json();
+    res.json(Array.isArray(data) ? data : []);
+
+  } catch (error) {
+    console.log("ERROR GASTOS:", error);
+    res.json([]);
+  }
+});
+
 
 app.listen(PORT, ()=>{
 console.log("Servidor corriendo en " + PORT)
