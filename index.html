@@ -1352,18 +1352,25 @@ setInterval(() => {
 
 /* DINERO EN MESAS */
 
-api("obtenerResumenMesas").then(function(data){
+/* DINERO EN MESAS */
+actualizarDineroMesas();
 
-let total=0
+}
 
-Object.values(data).forEach(v=>{
-total += Number(v) || 0
-})
+function actualizarDineroMesas(){
 
-document.getElementById("dineroMesas").innerText =
-"$"+total.toLocaleString()
+  api("obtenerResumenMesas").then(function(data){
 
-})
+    let total = 0;
+
+    Object.values(data || {}).forEach(v => {
+      total += Number(v) || 0;
+    });
+
+    document.getElementById("dineroMesas").innerText =
+      "$" + total.toLocaleString("es-CO");
+
+  });
 
 }
 
@@ -1946,18 +1953,10 @@ api("registrarVenta",{
 })
 .then(()=>{
 
-  let dineroActual = document
-    .getElementById("dineroMesas")
-    .innerText
-    .replace("$","")
-    .replace(/\./g,"")
-    .replace(/,/g,"")
-    .trim();
+  // Actualizar valor real de mesas
+  actualizarDineroMesas();
 
-  dineroActual = Number(dineroActual) || 0;
-  cargarTopBar();
-
-  // 🔄 REFRESCAR STOCK VISUAL
+  // Refrescar stock visual
   document.getElementById("busqueda").dispatchEvent(
     new Event("keyup")
   );
