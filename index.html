@@ -1359,18 +1359,14 @@ actualizarDineroMesas();
 
 function actualizarDineroMesas(){
 
-  api("obtenerResumenMesas").then(function(data){
+  let total = 0;
 
-    let total = 0;
-
-    Object.values(data || {}).forEach(v => {
-      total += Number(v) || 0;
-    });
-
-    document.getElementById("dineroMesas").innerText =
-      "$" + total.toLocaleString("es-CO");
-
+  mesas.forEach(mesa => {
+    total += Number(mesa.total || 0);
   });
+
+  document.getElementById("dineroMesas").innerText =
+    "$" + total.toLocaleString("es-CO");
 
 }
 
