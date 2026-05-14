@@ -1359,14 +1359,27 @@ actualizarDineroMesas();
 
 function actualizarDineroMesas(){
 
-  let total = 0;
+  // Esperar a que las tarjetas estén renderizadas
+  setTimeout(() => {
 
-  mesas.forEach(mesa => {
-    total += Number(mesa.total || 0);
-  });
+    let total = 0;
 
-  document.getElementById("dineroMesas").innerText =
-    "$" + total.toLocaleString("es-CO");
+    document.querySelectorAll(".mesa .mesaTotal").forEach(el => {
+
+      let valor = el.innerText
+        .replace(/\$/g, "")
+        .replace(/\./g, "")
+        .replace(/,/g, "")
+        .trim();
+
+      total += Number(valor) || 0;
+
+    });
+
+    document.getElementById("dineroMesas").innerText =
+      "$" + total.toLocaleString("es-CO");
+
+  }, 100);
 
 }
 
@@ -1571,6 +1584,8 @@ return
 mesas = data
 
 data.forEach(function(mesa){
+
+actualizarDineroMesas();
 
 let nombre = mesa.nombre || "Mesa"
 let total = Number(mesa.total || 0)
