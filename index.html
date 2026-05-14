@@ -1844,6 +1844,11 @@ animarVuelo(tarjeta)
 let cuenta = mesas[mesaSeleccionada].nombre
 
 let cantidad = Number(document.getElementById("cant_"+id).value)
+// 🔥 DESCONTAR STOCK EN TIEMPO REAL
+if (productos[id]) {
+  productos[id].restante =
+    Math.max(0, Number(productos[id].restante || 0) - cantidad);
+}
 
 let subtotal = precio * cantidad
 
@@ -1934,34 +1939,36 @@ total.classList.remove("animarTotal")
 
 /* 🔥 GUARDAR EN BACKEND */
 api("registrarVenta",{
-cuenta,
-nombre,
-precio,
-cantidad
+  cuenta,
+  nombre,
+  precio,
+  cantidad
 })
 .then(()=>{
 
-/* NO RECARGAR MESAS */
-/* SOLO ACTUALIZAR BARRA SUPERIOR */
+  let dineroActual = document
+    .getElementById("dineroMesas")
+    .innerText
+    .replace("$","")
+    .replace(/\./g,"")
+    .replace(/,/g,"")
+    .trim();
 
-let dineroActual = document
-.getElementById("dineroMesas")
-.innerText
-.replace("$","")
-.replace(/\./g,"")
-.replace(/,/g,"")
-.trim()
+  dineroActual = Number(dineroActual) || 0;
+  dineroActual += subtotal;
 
-dineroActual = Number(dineroActual) || 0
+  document.getElementById("dineroMesas").innerText =
+    "$" + dineroActual.toLocaleString("es-CO");
 
-dineroActual += subtotal
-
-document.getElementById("dineroMesas").innerText =
-"$" + dineroActual.toLocaleString("es-CO")
+  // 🔄 REFRESCAR STOCK VISUAL
+  document.getElementById("busqueda").dispatchEvent(
+    new Event("keyup")
+  );
 
 })
 .catch(err=>{
-console.error(err)
+  console.error(err);
+});
 })
 
 }
