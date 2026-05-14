@@ -1844,11 +1844,6 @@ animarVuelo(tarjeta)
 let cuenta = mesas[mesaSeleccionada].nombre
 
 let cantidad = Number(document.getElementById("cant_"+id).value)
-// 🔥 DESCONTAR STOCK EN TIEMPO REAL
-if (productos[id]) {
-  productos[id].restante =
-    Math.max(0, Number(productos[id].restante || 0) - cantidad);
-}
 
 let subtotal = precio * cantidad
 
@@ -1965,10 +1960,6 @@ document.getElementById("dineroMesas").innerText =
 "$" + dineroActual.toLocaleString("es-CO")
 
 })
-// 🔄 REFRESCAR RESULTADOS DEL BUSCADOR
-document.getElementById("busqueda").dispatchEvent(
-  new Event("keyup")
-);
 .catch(err=>{
 console.error(err)
 })
