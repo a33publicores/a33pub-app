@@ -1843,140 +1843,138 @@ campo.value=Number(campo.value)-1
 
 }
 
-function agregarProducto(nombre,precio,id){
+function agregarProducto(nombre, precio, id){
 
-if(mesaSeleccionada==null){
-alert("Selecciona una mesa")
-return
-}
+  if(mesaSeleccionada == null){
+    alert("Selecciona una mesa");
+    return;
+  }
 
-/* TARJETA DEL PRODUCTO */
-let tarjeta = document.getElementsByClassName("producto")[id]
+  const cuenta = mesas[mesaSeleccionada].nombre;
+  const cantidad = Number(document.getElementById("cant_" + id).value) || 1;
+  const subtotal = precio * cantidad;
 
-/* ANIMACIÓN VOLAR HACIA LA CUENTA */
-if(tarjeta){
-animarVuelo(tarjeta)
-}
+  /* =========================
+     1. ACTUALIZAR STOCK LOCAL
+  ========================= */
+  if(productos[id]){
+    productos[id].restante = Math.max(
+      0,
+      Number(productos[id].restante || 0) - cantidad
+    );
+  }
 
-/* OBTENER CUENTA */
-let cuenta = mesas[mesaSeleccionada].nombre
+  /* =========================
+     2. ACTUALIZAR CUENTA LOCAL
+  ========================= */
+  let detalle = document.getElementById("detalle");
 
-let cantidad = Number(document.getElementById("cant_"+id).value)
-// 🔥 DESCONTAR STOCK EN TIEMPO REAL
-if (productos[id]) {
-  productos[id].restante =
-    Math.max(0, Number(productos[id].restante || 0) - cantidad);
-}
+  detalle.innerHTML += `
+    <tr>
+      <td>${nombre}</td>
+      <td>${cantidad}</td>
+      <td>$${subtotal.toLocaleString("es-CO")}</td>
+      <td></td>
+    </tr>
+  `;
 
-let subtotal = precio * cantidad
+  /* =========================
+     3. ACTUALIZAR TOTAL PANEL
+  ========================= */
+  let textoTotal = document.getElementById("total")
+    .innerText
+    .replace("TOTAL $","")
+    .replace(/\./g,"")
+    .replace(/,/g,"")
+    .trim();
 
-/* ANIMAR TARJETA */
-if(tarjeta){
-tarjeta.classList.add("animar")
+  let totalActual = Number(textoTotal) || 0;
+  totalActual += subtotal;
 
-setTimeout(()=>{
-tarjeta.classList.remove("animar")
-},250)
-}
+  document.getElementById("total").innerText =
+    "TOTAL $" + totalActual.toLocaleString("es-CO");
 
-/* AGREGAR FILA A LA CUENTA */
-let htmlFila = `
-<tr>
-<td>${nombre}</td>
-<td>${cantidad}</td>
-<td>$${subtotal.toLocaleString("es-CO")}</td>
-<td></td>
-</tr>
-`
+  /* =========================
+     4. GUARDAR TOTAL LOCAL
+  ========================= */
+  if(!window.totalesMesas){
+    window.totalesMesas = {};
+  }
 
-detalle.innerHTML += htmlFila
+  window.totalesMesas[cuenta] = totalActual;
+  mesas[mesaSeleccionada].total = totalActual;
 
-/* CALCULAR TOTAL */
-/* CALCULAR TOTAL */
+  /* =========================
+     5. ACTUALIZAR TARJETA INMEDIATAMENTE
+  ========================= */
+  const tarjetas = document.querySelectorAll(".mesa");
 
-let textoTotal = document
-.getElementById("total")
-.innerText
-.replace("TOTAL $","")
-.replace(/\./g,"")
-.replace(/,/g,"")
-.replace(/\$/g,"")
-.trim()
+  tarjetas.forEach(card => {
 
-let totalActual = Number(textoTotal) || 0
+    const nombreMesa = card
+      .querySelector("div div")
+      .innerText
+      .trim();
 
-totalActual += subtotal
+    if(nombreMesa === cuenta){
 
-/* MOSTRAR TOTAL */
-document.getElementById("total").innerText =
-"TOTAL $" + totalActual.toLocaleString("es-CO")
+      const divTotal = card.querySelector(".mesaTotal");
 
-/* ACTUALIZAR TOTAL VISUAL DE LA MESA */
+      if(divTotal){
+        divTotal.innerText =
+          "$" + totalActual.toLocaleString("es-CO");
+      }
+    }
+  });
 
-/* ACTUALIZAR TOTAL LOCAL DE LA MESA */
-
-if(!window.totalesMesas){
-window.totalesMesas = {}
-}
-
-window.totalesMesas[cuenta] = totalActual
-mesas[mesaSeleccionada].total = totalActual
-
-/* ACTUALIZAR TARJETA */
-
-const tarjetas = document.querySelectorAll(".mesa")
-
-tarjetas.forEach(card=>{
-
-let nombreMesa = card
-.querySelector("div div")
-.innerText
-.trim()
-
-if(nombreMesa === cuenta){
-
-let divTotal = card.querySelector(".mesaTotal")
-
-if(divTotal){
-
-divTotal.innerText =
-"$" + totalActual.toLocaleString("es-CO")
-
-}
-
-}
-
-})
-
-/* ANIMAR TOTAL */
-total.classList.add("animarTotal")
-
-setTimeout(()=>{
-total.classList.remove("animarTotal")
-},400)
-
-/* 🔥 GUARDAR EN BACKEND */
-api("registrarVenta",{
-  cuenta,
-  nombre,
-  precio,
-  cantidad
-})
-.then(()=>{
-
-  // Actualizar valor real de mesas
+  /* =========================
+     6. ACTUALIZAR "EN MESAS"
+  ========================= */
   actualizarDineroMesas();
 
-  // Refrescar stock visual
-  document.getElementById("busqueda").dispatchEvent(
-    new Event("keyup")
-  );
+  /* =========================
+     7. REFRESCAR STOCK VISUAL
+  ========================= */
+  document.getElementById("busqueda")
+    .dispatchEvent(new Event("keyup"));
 
-})
-.catch(err=>{
-  console.error(err);
-});
+  /* =========================
+     8. ANIMACIONES
+  ========================= */
+  const tarjetaProducto =
+    document.getElementsByClassName("producto")[id];
 
+  if(tarjetaProducto){
+    animarVuelo(tarjetaProducto);
+
+    tarjetaProducto.classList.add("animar");
+
+    setTimeout(() => {
+      tarjetaProducto.classList.remove("animar");
+    }, 250);
+  }
+
+  total.classList.add("animarTotal");
+
+  setTimeout(() => {
+    total.classList.remove("animarTotal");
+  }, 400);
+
+  /* =========================
+     9. GUARDAR EN SEGUNDO PLANO
+  ========================= */
+  api("registrarVenta", {
+    cuenta,
+    nombre,
+    precio,
+    cantidad
+  })
+  .then(() => {
+    console.log("Venta guardada");
+  })
+  .catch(err => {
+    console.error("Error guardando venta:", err);
+  });
 }
 
 
