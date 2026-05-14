@@ -1955,10 +1955,7 @@ api("registrarVenta",{
     .trim();
 
   dineroActual = Number(dineroActual) || 0;
-  dineroActual += subtotal;
-
-  document.getElementById("dineroMesas").innerText =
-    "$" + dineroActual.toLocaleString("es-CO");
+  cargarTopBar();
 
   // 🔄 REFRESCAR STOCK VISUAL
   document.getElementById("busqueda").dispatchEvent(
